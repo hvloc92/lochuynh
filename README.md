@@ -1,2 +1,2 @@
-# lochuynh
+# lochuynh.github.io
 Study
