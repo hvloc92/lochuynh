@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
+    <title>Sách Đa Ngôn Ngữ</title>
+    <style>
+        :root {
+            --bg-body: #dcdcdc;
+            --bg-book: #f4f1ea;
+            --text-main: #1a1a1a;
+            --text-sub: #555;
+            --accent: #e67e22;
+            --border: #d1ccc0;
+        }
+
+        /* Chế độ Dark Mode */
+        .dark-mode {
+            --bg-body: #1a1a1b;
+            --bg-book: #2c2c2e;
+            --text-main: #e1e1e1;
+            --text-sub: #b0b0b0;
+            --accent: #f39c12;
+            --border: #444;
+        }
+
+        body { 
+            margin: 0; padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-book);
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sentence-item {
+            display: flex;
+            padding: 20px 5%; /* Lề trái 5% theo yêu cầu */
+            border-bottom: 1px solid var(--border);
+            word-wrap: break-word; /* Tự động xuống dòng */
+        }
+
+        .text-content {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .row-cn { font-family: "Noto Serif SC","Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 1.8rem; font-weight: normal; margin-bottom: 20px; line-height: 1.4; }
+        .row-en { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); opacity: 0.9; }
+        .row-vi { font-size: 1rem; color: var(--text-sub); font-style: italic; }
+        
+        .pos-tag { font-size: 0.85rem; color: var(--accent); display: block; margin-bottom: 20px; margin-top: 0px; font-weight: normal; }
+
+        /* Phím chức năng dạng cột icon */
+        .control-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .btn-icon:hover { background: #eee; transform: scale(1.1); }
+
+        /* Menu nổi cố định ở góc dưới bên phải */
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .settings-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none; /* Ẩn mặc định */
+            color: #333;
+            font-size: 14px;
+        }
+
+        .show-settings .settings-box { display: block; }
+
+        .btn-main-float {
+            width: 50px;
+            height: 50px;
+            background: #34495e;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+
+	/* Thêm vào trong thẻ <style> */
+	.pinyin-row {
+    		font-size: 16px;
+		font-weight: normal;
+   		color: #27ae60; /* Màu xanh lá dịu mắt */
+    		display: block;
+    		margin-top: 0px;
+		margin-bottom: 20px;
+	}
+
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="book-container" id="bookContent">
+    </div>
+
+<div class="floating-menu" id="floatMenu">
+    <div class="settings-box">
+        <strong>⚙️ Cài đặt</strong><hr>
+        Tốc độ: <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9" style="width: 100px;"><br>
+        <label><input type="checkbox" id="autoNext"> Tự động chuyển</label><br>
+	<button onclick="toggleAllPinyin()" style="width: 100%; margin-top: 10px;">🔤 Ẩn/Hiện Pinyin</button>
+        <button onclick="toggleDarkMode()" style="width: 100%; margin-top: 10px;">🌙 Dark Mode</button>
+    </div>
+    <button class="btn-main-float" onclick="document.getElementById('floatMenu').classList.toggle('show-settings')">🛠️</button>
+</div>
+
+<script>
+const sentences = [
+  {
+    cn_raw: `(二) 快上来吧, 要开车了`,
+    cn_split: `(二) - 快 - 上来 - 吧 - , - 要 - 开车 - 了`,
+    cn_pos: `Số từ - Phó từ - Động từ xu hướng - Trợ từ ngữ khí - Dấu phẩy - Động từ năng nguyện - Động từ - Trợ từ ngữ khí`,
+    en_raw: `(II) Come up quickly, the bus is about to start.`,
+    en_split: `(II) - Come up - quickly - , - the bus - is about to - start`,
+    en_pos: `Numeral - Phrasal verb - Adverb - Punctuation - Subject (Noun) - Auxiliary - Verb`,
+    vi: `(II) Mau lên đây đi, sắp chạy xe rồi.`,
+    pinyin: `(Èr) Kuài shànglái ba, yào kāichē le`
+  },
+  {
+    cn_raw: `(林老师和同学们一起坐车去展览馆参观。`,
+    cn_split: `( - 林老师 - 和 - 同学们 - 一起 - 坐车 - 去 - 展览馆 - 参观 - 。`,
+    cn_pos: `Ký hiệu - Danh từ riêng - Liên từ - Danh từ - Phó từ - Động từ (V-O) - Động từ - Danh từ - Động từ - Dấu câu`,
+    en_raw: `(Teacher Lin and the students take a bus to visit the exhibition hall.`,
+    en_split: `( - Teacher Lin - and - the students - take - a bus - to visit - the exhibition hall`,
+    en_pos: `Symbol - Subject (Noun) - Conjunction - Noun - Verb - Object - Infinitive - Object`,
+    vi: `(Thầy Lâm và các bạn học sinh cùng ngồi xe đi đến nhà triển lãm tham quan.`,
+    pinyin: `(Lín lǎoshī hé tóngxuémen yìqǐ zuòchē qù zhǎnlǎnguǎn cānguān.`
+  },
+  {
+    cn_raw: `车就要开了, 林老师在车上叫同学们快上车…`,
+    cn_split: `车 - 就要 - 开 - 了 - , - 林老师 - 在 - 车上 - 叫 - 同学们 - 快 - 上车 - …`,
+    cn_pos: `Danh từ - Phó từ - Động từ - Trợ từ - Dấu phẩy - Danh từ riêng - Giới từ - Danh từ chỉ nơi chốn - Động từ - Danh từ - Phó từ - Động từ - Dấu câu`,
+    en_raw: `The bus is about to leave, Teacher Lin is calling students to get on the bus...`,
+    en_split: `The bus - is about to - leave - , - Teacher Lin - is calling - students - to get on - the bus`,
+    en_pos: `Subject - Auxiliary - Verb - Punctuation - Subject - Present Continuous Verb - Object - Infinitive - Object`,
+    vi: `Xe sắp chạy rồi, thầy Lâm ở trên xe gọi các bạn học sinh mau lên xe...`,
+    pinyin: `Chē jiùyào kāi le, Lín lǎoshī zài chēshàng jiào tóngxuémen kuài shàngchē…`
+  },
+  {
+    cn_raw: `林老师：下边的同学快上来吧, 要开车了。`,
+    cn_split: `林老师 - ： - 下边 - 的 - 同学 - 快 - 上来 - 吧 - , - 要 - 开车 - 了 - 。`,
+    cn_pos: `Danh từ - Dấu câu - Danh từ chỉ vị trí - Trợ từ - Danh từ - Phó từ - Động từ xu hướng - Trợ từ ngữ khí - Dấu phẩy - Động từ năng nguyện - Động từ - Trợ từ - Dấu câu`,
+    en_raw: `Teacher Lin: Students below, come up quickly, the bus is about to start.`,
+    en_split: `Teacher Lin - : - Students - below - , - come up - quickly - , - the bus - is about to - start`,
+    en_pos: `Noun - Punctuation - Subject - Adverb - Punctuation - Verb - Adverb - Punctuation - Subject - Auxiliary - Verb`,
+    vi: `Thầy Lâm: Các em ở phía dưới mau lên đây đi, sắp chạy xe rồi.`,
+    pinyin: `Lín lǎoshī: Xiàbiān de tóngxué kuài shànglái ba, yào kāichē le.`
+  },
+  {
+    cn_raw: `麦克：老师, 我不上去了, 我到后边的五号车去可以吗?`,
+    cn_split: `麦克 - ： - 老师 - , - 我 - 不 - 上去 - 了 - , - 我 - 到 - 后边 - 的 - 五号车 - 去 - 可以 - 吗 - ?`,
+    cn_pos: `Danh từ riêng - Dấu câu - Danh từ - Dấu phẩy - Đại từ - Phó từ - Động từ xu hướng - Trợ từ - Dấu phẩy - Đại từ - Giới từ - Danh từ chỉ vị trí - Trợ từ - Danh từ - Động từ - Động từ năng nguyện - Trợ từ nghi vấn - Dấu câu`,
+    en_raw: `Mike: Teacher, I'm not going up, can I go to bus number five in the back?`,
+    en_split: `Mike - : - Teacher - , - I - am not going - up - , - can - I - go - to - bus number five - in the back`,
+    en_pos: `Noun - Punctuation - Noun - Punctuation - Subject - Negative Verb - Adverb - Punctuation - Modal - Subject - Verb - Preposition - Object - Adverb`,
+    vi: `Mike: Thầy ơi, em không lên nữa, em đến xe số 5 ở phía sau có được không ạ?`,
+    pinyin: `Màikè: Lǎoshī, wǒ bù shàngqù le, wǒ dào hòubiān de wǔ hào chē qù kěyǐ ma?`
+  },
+  {
+    cn_raw: `我朋友在那儿。`,
+    cn_split: `我 - 朋友 - 在 - 那儿 - 。`,
+    cn_pos: `Đại từ - Danh từ - Động từ (tồn tại) - Đại từ chỉ nơi chốn - Dấu câu`,
+    en_raw: `My friend is there.`,
+    en_split: `My friend - is - there`,
+    en_pos: `Subject - Verb - Adverb`,
+    vi: `Bạn của em ở đó.`,
+    pinyin: `Wǒ péngyǒu zài nàr.`
+  },
+  {
+    cn_raw: `林老师：你过去吧。`,
+    cn_split: `林老师 - ： - 你 - 过去 - 吧 - 。`,
+    cn_pos: `Danh từ - Dấu câu - Đại từ - Động từ xu hướng - Trợ từ ngữ khí - Dấu câu`,
+    en_raw: `Teacher Lin: You go there.`,
+    en_split: `Teacher Lin - : - You - go - there`,
+    en_pos: `Noun - Punctuation - Subject - Verb - Adverb`,
+    vi: `Thầy Lâm: Em qua đó đi.`,
+    pinyin: `Lín lǎoshī: Nǐ guòqù ba.`
+  },
+  {
+    cn_raw: `玛丽怎么还没上来呢?`,
+    cn_split: `玛丽 - 怎么 - 还 - 没 - 上来 - 呢 - ?`,
+    cn_pos: `Danh từ riêng - Đại từ nghi vấn - Phó từ - Phó từ phủ định - Động từ xu hướng - Trợ từ nghi vấn - Dấu câu`,
+    en_raw: `Why hasn't Mary come up yet?`,
+    en_split: `Why - has - Mary - not - come up - yet`,
+    en_pos: `Adverb - Auxiliary - Subject - Adverb - Verb - Adverb`,
+    vi: `Mary sao vẫn chưa lên nhỉ?`,
+    pinyin: `Mǎlì zěnme hái méi shànglái ne?`
+  },
+  {
+    cn_raw: `山本：她忘带照相机了, 又回宿舍去拿了, 一会儿就回来。`,
+    cn_split: `山本 - ： - 她 - 忘 - 带 - 照相机 - 了 - , - 又 - 回 - 宿舍 - 去 - 拿 - 了 - , - 一会儿 - 就 - 回来 - 。`,
+    cn_pos: `Danh từ riêng - Dấu câu - Đại từ - Động từ - Động từ - Danh từ - Trợ từ - Dấu phẩy - Phó từ - Động từ - Danh từ - Động từ xu hướng - Động từ - Trợ từ - Dấu phẩy - Danh từ chỉ thời gian - Phó từ - Động từ xu hướng - Dấu câu`,
+    en_raw: `Yamamoto: She forgot to bring her camera, went back to the dorm to get it, she'll be back in a while.`,
+    en_split: `Yamamoto - : - She - forgot - to bring - her camera - , - went - back - to the dorm - to get - it - , - she - will be - back - in a while`,
+    en_pos: `Noun - Punctuation - Subject - Verb - Infinitive - Object - Punctuation - Verb - Adverb - Prepositional phrase - Infinitive - Object - Punctuation - Subject - Auxiliary - Adverb - Time phrase`,
+    vi: `Yamamoto: Cậu ấy quên mang máy ảnh rồi, lại quay về ký túc xá lấy rồi, một lát nữa sẽ quay lại ngay.`,
+    pinyin: `Shānběn: Tā wàng dài zhàoxiàngjī le, yòu huí sùshè qù ná le, yíhuìr jiù huílái.`
+  },
+  {
+    cn_raw: `啊, 她跑来了。`,
+    cn_split: `啊 - , - 她 - 跑 - 来 - 了 - 。`,
+    cn_pos: `Thán từ - Dấu phẩy - Đại từ - Động từ - Động từ xu hướng - Trợ từ - Dấu câu`,
+    en_raw: `Ah, she is running here.`,
+    en_split: `Ah - , - she - is running - here`,
+    en_pos: `Interjection - Punctuation - Subject - Continuous Verb - Adverb`,
+    vi: `A, cậu ấy đang chạy đến rồi.`,
+    pinyin: `À, tā pǎolái le.`
+  },
+  {
+    cn_raw: `玛丽, 快点儿, 就要开车了。`,
+    cn_split: `玛丽 - , - 快点儿 - , - 就要 - 开车 - 了 - 。`,
+    cn_pos: `Danh từ riêng - Dấu phẩy - Phó từ - Dấu phẩy - Phó từ - Động từ (V-O) - Trợ từ - Dấu câu`,
+    en_raw: `Mary, hurry up, the bus is about to start.`,
+    en_split: `Mary - , - hurry up - , - the bus - is about to - start`,
+    en_pos: `Noun - Punctuation - Verb phrase - Punctuation - Subject - Auxiliary - Verb`,
+    vi: `Mary, nhanh lên chút, sắp chạy xe rồi.`,
+    pinyin: `Mǎlì, kuàidiǎnr, jiùyào kāichē le.`
+  },
+  {
+    cn_raw: `(玛丽上来了)`,
+    cn_split: `( - 玛丽 - 上来 - 了 - )`,
+    cn_pos: `Ký hiệu - Danh từ riêng - Động từ xu hướng - Trợ từ - Ký hiệu`,
+    en_raw: `(Mary came up)`,
+    en_split: `( - Mary - came - up - )`,
+    en_pos: `Symbol - Subject - Verb - Adverb - Symbol`,
+    vi: `(Mary đã lên rồi)`,
+    pinyin: `(Mǎlì shànglái le)`
+  },
+  {
+    cn_raw: `玛丽：对不起, 我来晚了。`,
+    cn_split: `玛丽 - ： - 对不起 - , - 我 - 来 - 晚 - 了 - 。`,
+    cn_pos: `Danh từ riêng - Dấu câu - Động từ - Dấu phẩy - Đại từ - Động từ - Tính từ (bổ ngữ) - Trợ từ - Dấu câu`,
+    en_raw: `Mary: Sorry, I am late.`,
+    en_split: `Mary - : - Sorry - , - I - am - late`,
+    en_pos: `Noun - Punctuation - Adjective - Punctuation - Subject - Verb - Adjective`,
+    vi: `Mary: Xin lỗi, em đến muộn rồi.`,
+    pinyin: `Mǎlì: Duìbuqǐ, wǒ lái wǎn le.`
+  },
+  {
+    cn_raw: `山本：玛丽, 这儿还有座位, 你过来吧。`,
+    cn_split: `山本 - ： - 玛丽 - , - 这儿 - 还 - 有 - 座位 - , - 你 - 过来 - 吧 - 。`,
+    cn_pos: `Danh từ riêng - Dấu câu - Danh từ riêng - Dấu phẩy - Đại từ chỉ nơi chốn - Phó từ - Động từ - Danh từ - Dấu phẩy - Đại từ - Động từ xu hướng - Trợ từ ngữ khí - Dấu câu`,
+    en_raw: `Yamamoto: Mary, there are still seats here, come over here.`,
+    en_split: `Yamamoto - : - Mary - , - there - are - still - seats - here - , - you - come - over here`,
+    en_pos: `Noun - Punctuation - Noun - Punctuation - Adverb - Verb - Adverb - Noun - Adverb - Punctuation - Subject - Verb - Adverb`,
+    vi: `Yamamoto: Mary, ở đây vẫn còn chỗ ngồi, cậu qua đây đi.`,
+    pinyin: `Shānběn: Mǎlì, zhèr hái yǒu zuòwèi, nǐ guòlái ba.`
+  },
+  {
+    cn_raw: `林老师：请大家注意, 我先说一件事。`,
+    cn_split: `林老师 - ： - 请 - 大家 - 注意 - , - 我 - 先 - 说 - 一 - 件 - 事 - 。`,
+    cn_pos: `Danh từ - Dấu câu - Động từ - Đại từ - Động từ - Dấu phẩy - Đại từ - Phó từ - Động từ - Số từ - Lượng từ - Danh từ - Dấu câu`,
+    en_raw: `Teacher Lin: Please pay attention everyone, I will say something first.`,
+    en_split: `Teacher Lin - : - Please - pay attention - everyone - , - I - will say - something - first`,
+    en_pos: `Noun - Punctuation - Verb - Verb - Object - Punctuation - Subject - Future Verb - Object - Adverb`,
+    vi: `Thầy Lâm: Xin mọi người chú ý, thầy nói một việc này trước.`,
+    pinyin: `Lín lǎoshī: Qǐng dàjiā zhùyì, wǒ xiān shuō yí jiàn shì.`
+  },
+  {
+    cn_raw: `我们今天去参观出土文物展览。`,
+    cn_split: `我们 - 今天 - 去 - 参观 - 出土 - 文物 - 展览 - 。`,
+    cn_pos: `Đại từ - Danh từ thời gian - Động từ - Động từ - Động từ/Tính từ - Danh từ - Danh từ - Dấu câu`,
+    en_raw: `Today we are going to visit the exhibition of unearthed cultural relics.`,
+    en_split: `Today - we - are going - to visit - the exhibition - of - unearthed cultural relics`,
+    en_pos: `Time - Subject - Verb - Infinitive - Object - Preposition - Compound Noun`,
+    vi: `Chúng ta hôm nay đi tham quan triển lãm di vật văn hóa khai quật.`,
+    pinyin: `Wǒmen jīntiān qù cānguān chūtǔ wénwù zhǎnlǎn.`
+  },
+  {
+    cn_raw: `这个展览大约要参观两个半小时。`,
+    cn_split: `这个 - 展览 - 大约 - 要 - 参观 - 两个半 - 小时 - 。`,
+    cn_pos: `Đại từ chỉ định + Lượng từ - Danh từ - Phó từ - Động từ năng nguyện - Động từ - Số từ - Danh từ - Dấu câu`,
+    en_raw: `This exhibition will take about two and a half hours to visit.`,
+    en_split: `This exhibition - will take - about - two and a half - hours - to visit`,
+    en_pos: `Subject - Verb - Adverb - Numeral - Noun - Infinitive`,
+    vi: `Cuộc triển lãm này ước chừng phải tham quan trong hai tiếng rưỡi.`,
+    pinyin: `Zhège zhǎnlǎn dàyuē yào cānguān liǎng gè bàn xiǎoshí.`
+  },
+  {
+    cn_raw: `参观完以后, 四点钟开车回来。`,
+    cn_split: `参观 - 完 - 以后 - , - 四点钟 - 开车 - 回来 - 。`,
+    cn_pos: `Động từ - Kết quả - Danh từ thời gian - Dấu phẩy - Danh từ thời gian - Động từ (V-O) - Động từ xu hướng - Dấu câu`,
+    en_raw: `After visiting, the bus will drive back at four o'clock.`,
+    en_split: `After - visiting - , - the bus - will drive - back - at four o'clock`,
+    en_pos: `Preposition - Gerund - Punctuation - Subject - Verb - Adverb - Time phrase`,
+    vi: `Sau khi tham quan xong, bốn giờ xe sẽ chạy về.`,
+    pinyin: `Cānguān wán yǐhòu, sì diǎnzhōng kāichē huílái.`
+  },
+  {
+    cn_raw: `要求大家四点准时上车。`,
+    cn_split: `要求 - 大家 - 四点 - 准时 - 上车 - 。`,
+    cn_pos: `Động từ - Đại từ - Danh từ thời gian - Phó từ - Động từ (V-O) - Dấu câu`,
+    en_raw: `Everyone is required to get on the bus on time at four.`,
+    en_split: `Everyone - is required - to get on - the bus - on time - at four`,
+    en_pos: `Subject - Passive Verb - Infinitive - Object - Adverb - Time`,
+    vi: `Yêu cầu mọi người bốn giờ đúng giờ lên xe.`,
+    pinyin: `Yāoqiú dàjiā sì diǎn zhǔnshí shàngchē.`
+  },
+  {
+    cn_raw: `不回来的同学跟我说一声。`,
+    cn_split: `不 - 回来 - 的 - 同学 - 跟 - 我 - 说 - 一声 - 。`,
+    cn_pos: `Phó từ - Động từ xu hướng - Trợ từ - Danh từ - Giới từ - Đại từ - Động từ - Số lượng từ (bổ ngữ) - Dấu câu`,
+    en_raw: `Students who are not coming back, please tell me.`,
+    en_split: `Students - who - are not coming - back - , - please - tell - me`,
+    en_pos: `Subject - Relative Pronoun - Negative Verb - Adverb - Punctuation - Verb - Verb - Object`,
+    vi: `Bạn học nào không về thì nói với thầy một tiếng.`,
+    pinyin: `Bù huílái de tóngxué gēn wǒ shuō yìshēng.`
+  },
+  {
+    cn_raw: `听清楚了没有?`,
+    cn_split: `听 - 清楚 - 了 - 没有 - ?`,
+    cn_pos: `Động từ - Tính từ (bổ ngữ) - Trợ từ - Phó từ nghi vấn - Dấu câu`,
+    en_raw: `Did you hear clearly?`,
+    en_split: `Did - you - hear - clearly`,
+    en_pos: `Auxiliary - Subject - Verb - Adverb`,
+    vi: `Nghe rõ chưa?`,
+    pinyin: `Tīng qīngchu le méiyǒu?`
+  },
+  {
+    cn_raw: `留学生：听清楚了。`,
+    cn_split: `留学生 - ： - 听 - 清楚 - 了 - 。`,
+    cn_pos: `Danh từ - Dấu câu - Động từ - Tính từ (bổ ngữ) - Trợ từ - Dấu câu`,
+    en_raw: `Foreign students: Heard clearly.`,
+    en_split: `Foreign students - : - Heard - clearly`,
+    en_pos: `Noun - Punctuation - Verb - Adverb`,
+    vi: `Lưu học sinh: Nghe rõ rồi ạ.`,
+    pinyin: `Liúxuéshēng: Tīng qīngchu le.`
+  },
+  {
+    cn_raw: `林老师：要记住开车的时间。`,
+    cn_split: `林老师 - ： - 要 - 记住 - 开车 - 的 - 时间 - 。`,
+    cn_pos: `Danh từ - Dấu câu - Động từ năng nguyện - Động từ - Động từ - Trợ từ - Danh từ - Dấu câu`,
+    en_raw: `Teacher Lin: Must remember the time the bus leaves.`,
+    en_split: `Teacher Lin - : - Must - remember - the time - the bus leaves`,
+    en_pos: `Noun - Punctuation - Modal - Verb - Object - Clause`,
+    vi: `Thầy Lâm: Phải ghi nhớ thời gian xe chạy.`,
+    pinyin: `Lín lǎoshī: Yào jìzhù kāichē de shíjiān.`
+  },
+  {
+    cn_raw: `都上来了吗?`,
+    cn_split: `都 - 上来 - 了 - 吗 - ?`,
+    cn_pos: `Phó từ - Động từ xu hướng - Trợ từ - Trợ từ nghi vấn - Dấu câu`,
+    en_raw: `Is everyone up?`,
+    en_split: `Is - everyone - up`,
+    en_pos: `Auxiliary - Subject - Adjective`,
+    vi: `Đã lên hết chưa?`,
+    pinyin: `Dōu shànglái le ma?`
+  },
+  {
+    cn_raw: `好, 师傅, 开车吧。`,
+    cn_split: `好 - , - 师傅 - , - 开车 - 吧 - 。`,
+    cn_pos: `Tính từ - Dấu phẩy - Danh từ - Dấu phẩy - Động từ (V-O) - Trợ từ ngữ khí - Dấu câu`,
+    en_raw: `Good, driver, let's start the car.`,
+    en_split: `Good - , - driver - , - let's - start - the car`,
+    en_pos: `Adjective - Punctuation - Noun - Punctuation - Modal - Verb - Object`,
+    vi: `Được rồi, bác tài ơi, chạy xe thôi.`,
+    pinyin: `Hǎo, shīfu, kāichē ba.`
+  },
+  {
+    cn_raw: `山本：(站起来给老师让座位) 老师, 您到这儿来坐吧。`,
+    cn_split: `山本 - ： - ( - 站 - 起来 - 给 - 老师 - 让 - 座位 - ) - 老师 - , - 您 - 到 - 这儿 - 来 - 坐 - 吧 - 。`,
+    cn_pos: `Danh từ riêng - Dấu câu - Ký hiệu - Động từ - Động từ xu hướng - Giới từ - Danh từ - Động từ - Danh từ - Ký hiệu - Danh từ - Dấu phẩy - Đại từ - Giới từ - Đại từ chỉ nơi chốn - Động từ xu hướng - Động từ - Trợ từ ngữ khí - Dấu câu`,
+    en_raw: `Yamamoto: (Standing up to give the teacher a seat) Teacher, you come here to sit.`,
+    en_split: `Yamamoto - : - ( - Standing - up - to give - the teacher - a seat - ) - Teacher - , - you - come - here - to sit`,
+    en_pos: `Noun - Punctuation - Symbol - Participle - Adverb - Infinitive - Indirect Object - Direct Object - Symbol - Noun - Punctuation - Subject - Verb - Adverb - Infinitive`,
+    vi: `Yamamoto: (Đứng dậy nhường chỗ cho thầy giáo) Thầy ơi, thầy lại đây ngồi đi ạ.`,
+    pinyin: `Shānběn: (zhàn qǐlái gěi lǎoshī ràng zuòwèi) lǎoshī, nín dào zhèr lái zuò ba.`
+  },
+  {
+    cn_raw: `林老师：我不过去了, 就坐这儿了, 你快坐下吧。`,
+    cn_split: `林老师 - ： - 我 - 不 - 过去 - 了 - , - 就 - 坐 - 这儿 - 了 - , - 你 - 快 - 坐下 - 吧 - 。`,
+    cn_pos: `Danh từ - Dấu câu - Đại từ - Phó từ - Động từ xu hướng - Trợ từ - Dấu phẩy - Phó từ - Động từ - Đại từ chỉ nơi chốn - Trợ từ - Dấu phẩy - Đại từ - Phó từ - Động từ xu hướng - Trợ từ ngữ khí - Dấu câu`,
+    en_raw: `Teacher Lin: I am not going over, I'll just sit here, you sit down quickly.`,
+    en_split: `Teacher Lin - : - I - am not - going - over - , - I'll - just sit - here - , - you - sit down - quickly`,
+    en_pos: `Noun - Punctuation - Subject - Negative Verb - Adverb - Punctuation - Subject - Verb - Adverb - Punctuation - Subject - Verb - Adverb`,
+    vi: `Thầy Lâm: Thầy không qua đó đâu, thầy ngồi ngay đây rồi, em mau ngồi xuống đi.`,
+    pinyin: `Lín lǎoshī: Wǒ bú guòqù le, jiù zuò zhèr le, nǐ kuài zuòxià ba.`
+  },
+  {
+    cn_raw: `(到了展览馆门前)`,
+    cn_split: `( - 到 - 了 - 展览馆 - 门前 - )`,
+    cn_pos: `Ký hiệu - Động từ - Trợ từ - Danh từ - Danh từ chỉ vị trí - Ký hiệu`,
+    en_raw: `(Arrived at the front gate of the exhibition hall)`,
+    en_split: `( - Arrived - at - the front gate - of the exhibition hall - )`,
+    en_pos: `Symbol - Verb - Preposition - Object - Prepositional phrase - Symbol`,
+    vi: `(Đã đến trước cửa nhà triển lãm)`,
+    pinyin: `(Dào le zhǎnlǎnguǎn ménqián)`
+  },
+  {
+    cn_raw: `玛丽：老师, 参观完以后, 我想到大使馆去看朋友, 不回学校去了, 可以吗?`,
+    cn_split: `玛丽 - ： - 老师 - , - 参观 - 完 - 以后 - , - 我 - 想 - 到 - 大使馆 - 去 - 看 - 朋友 - , - 不 - 回 - 学校 - 去 - 了 - , - 可以 - 吗 - ?`,
+    cn_pos: `Danh từ riêng - Dấu câu - Danh từ - Dấu phẩy - Động từ - Kết quả - Danh từ thời gian - Dấu phẩy - Đại từ - Động từ năng nguyện - Giới từ - Danh từ - Động từ xu hướng - Động từ - Danh từ - Dấu phẩy - Phó từ - Động từ - Danh từ - Động từ xu hướng - Trợ từ - Dấu phẩy - Động từ năng nguyện - Trợ từ nghi vấn - Dấu câu`,
+    en_raw: `Mary: Teacher, after visiting, I want to go to the embassy to see a friend, I'm not going back to school, is that okay?`,
+    en_split: `Mary - : - Teacher - , - after - visiting - , - I - want - to go - to the embassy - to see - a friend - , - I'm not - going - back - to school - , - is that - okay`,
+    en_pos: `Noun - Punctuation - Noun - Punctuation - Preposition - Gerund - Punctuation - Subject - Modal - Infinitive - Object - Infinitive - Object - Punctuation - Subject - Negative Verb - Adverb - Object - Punctuation - Auxiliary - Adjective`,
+    vi: `Mary: Thầy ơi, sau khi tham quan xong, em muốn đến đại sứ quán thăm bạn, không về trường nữa, có được không ạ?`,
+    pinyin: `Mǎlì: Lǎoshī, cānguān wán yǐhòu, wǒ xiǎng dào dàshǐguǎn qù kàn péngyǒu, bù huí xuéxiào qù le, kěyǐ ma?`
+  },
+  {
+    cn_raw: `林老师：可以。`,
+    cn_split: `林老师 - ： - 可以 - 。`,
+    cn_pos: `Danh từ - Dấu câu - Động từ năng nguyện - Dấu câu`,
+    en_raw: `Teacher Lin: Yes (can).`,
+    en_split: `Teacher Lin - : - Yes`,
+    en_pos: `Noun - Punctuation - Adverb`,
+    vi: `Thầy Lâm: Được.`,
+    pinyin: `Lín lǎoshī: Kěyǐ.`
+  }
+];
+// Cập nhật hàm render để truyền dữ liệu an toàn hơn
+function renderBook() {
+    const container = document.getElementById('bookContent');
+    sentences.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'sentence-item';
+        item.innerHTML = `
+            <div class="text-content">
+                <div class="row-cn">
+                    <span id="cn-txt-${i}">${s.cn_raw}</span>
+                </div>
+                <div id="cn-pos-${i}" class="pos-tag hidden">${s.cn_pos}</div>
+                <div id="pinyin-${i}" class="pinyin-row hidden">${s.pinyin || ''}</div>
+                <div class="row-en">
+                    <span id="en-txt-${i}">${s.en_raw}</span>
+                </div>
+                <div id="en-pos-${i}" class="pos-tag hidden">${s.en_pos}</div>
+                <div class="row-vi">${s.vi}</div>
+            </div>
+            <div class="control-sidebar">
+                <button class="btn-icon" onclick="playSpeech(${i}, 'cn')">♘</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'cn')">♔</button>
+                <button class="btn-icon" onclick="playSpeech(${i}, 'en')">♖</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'en')">♕</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+// Hàm phát âm mới: Lấy dữ liệu trực tiếp từ mảng thay vì truyền chuỗi qua HTML
+// Hàm phát âm: Tự động duy trì ngôn ngữ đang chọn
+function playSpeech(index, langType) {
+    // 1. Dừng mọi âm thanh đang phát để tránh chồng chéo
+    window.speechSynthesis.cancel(); 
+
+    let textToRead = "";
+    let langCode = "";
+
+    // 2. Xác định nội dung và mã ngôn ngữ dựa trên lựa chọn của người dùng
+    if (langType === 'cn') {
+        textToRead = sentences[index].cn_raw;
+        langCode = 'zh-CN';
+    } else {
+        textToRead = sentences[index].en_raw;
+        langCode = 'en-US';
+    }
+
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = textToRead;
+    msg.lang = langCode;
+    msg.rate = document.getElementById('rate').value;
+    
+    // 3. Hiệu ứng Highlight: Tô màu câu đang đọc để dễ theo dõi
+    const allItems = document.getElementsByClassName('sentence-item');
+    // Xóa màu của tất cả các câu khác
+    Array.from(allItems).forEach(item => item.style.backgroundColor = "transparent");
+    // Tô màu vàng nhạt cho câu hiện tại
+    allItems[index].style.backgroundColor = "rgba(230, 126, 34, 0.1)";
+
+    // 4. Xử lý khi kết thúc câu
+    msg.onend = () => {
+        const isAuto = document.getElementById('autoNext').checked;
+        if (isAuto && index < sentences.length - 1) {
+            setTimeout(() => {
+                // QUAN TRỌNG: Truyền đúng langType hiện tại vào lần gọi tiếp theo
+                playSpeech(index + 1, langType); 
+                
+                // Tự động cuộn màn hình đến câu tiếp theo
+                allItems[index + 1].scrollIntoView({
+                    behavior: "smooth", 
+                    block: "center"
+                });
+            }, 500); // Nghỉ 0.5 giây giữa các câu để người dùng kịp ngấm
+        }
+    };
+
+    window.speechSynthesis.speak(msg);
+}
+function toggleMode(index, lang) {
+    const txtSpan = document.getElementById(`${lang}-txt-${index}`);
+    const posSpan = document.getElementById(`${lang}-pos-${index}`);
+    const isOriginal = txtSpan.innerText === sentences[index][`${lang}_raw`];
+
+    txtSpan.innerText = isOriginal ? sentences[index][`${lang}_split`] : sentences[index][`${lang}_raw`];
+    posSpan.classList.toggle('hidden');
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+
+function toggleAllPinyin() {
+    // 1. Lấy tất cả các phần tử có class là pinyin-row
+    const pinyinElements = document.getElementsByClassName('pinyin-row');
+    
+    // 2. Kiểm tra nếu không tìm thấy phần tử nào (báo lỗi ra Console để kiểm tra)
+    if (pinyinElements.length === 0) {
+        console.error("Không tìm thấy phần tử nào có class 'pinyin-row'");
+        return;
+    }
+
+    // 3. Duyệt qua từng phần tử và bật/tắt class 'hidden'
+    for (let i = 0; i < pinyinElements.length; i++) {
+        pinyinElements[i].classList.toggle('hidden');
+    }
+}
+
+function speak(text, lang, index) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = document.getElementById('rate').value;
+
+    msg.onend = () => {
+        if (document.getElementById('autoNext').checked && index < sentences.length - 1) {
+            setTimeout(() => {
+                speak(sentences[index + 1].cn_raw, 'zh-CN', index + 1);
+                document.getElementsByClassName('sentence-item')[index+1].scrollIntoView({behavior: "smooth", block: "center"});
+            }, 1200);
+        }
+    };
+    window.speechSynthesis.speak(msg);
+}
+
+renderBook();
+</script>
+</body>
+</html>

@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
+    <title>Sách Đa Ngôn Ngữ</title>
+    <style>
+        :root {
+            --bg-body: #dcdcdc;
+            --bg-book: #f4f1ea;
+            --text-main: #1a1a1a;
+            --text-sub: #555;
+            --accent: #e67e22;
+            --border: #d1ccc0;
+        }
+
+        /* Chế độ Dark Mode */
+        .dark-mode {
+            --bg-body: #1a1a1b;
+            --bg-book: #2c2c2e;
+            --text-main: #e1e1e1;
+            --text-sub: #b0b0b0;
+            --accent: #f39c12;
+            --border: #444;
+        }
+
+        body { 
+            margin: 0; padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-book);
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sentence-item {
+            display: flex;
+            padding: 20px 5%; /* Lề trái 5% theo yêu cầu */
+            border-bottom: 1px solid var(--border);
+            word-wrap: break-word; /* Tự động xuống dòng */
+        }
+
+        .text-content {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .row-cn { font-family: "Noto Serif SC","Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 1.8rem; font-weight: normal; margin-bottom: 20px; line-height: 1.4; }
+        .row-en { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); opacity: 0.9; }
+        .row-vi { font-size: 1rem; color: var(--text-sub); font-style: italic; }
+        
+        .pos-tag { font-size: 0.85rem; color: var(--accent); display: block; margin-bottom: 20px; margin-top: 0px; font-weight: normal; }
+
+        /* Phím chức năng dạng cột icon */
+        .control-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .btn-icon:hover { background: #eee; transform: scale(1.1); }
+
+        /* Menu nổi cố định ở góc dưới bên phải */
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .settings-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none; /* Ẩn mặc định */
+            color: #333;
+            font-size: 14px;
+        }
+
+        .show-settings .settings-box { display: block; }
+
+        .btn-main-float {
+            width: 50px;
+            height: 50px;
+            background: #34495e;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+
+	/* Thêm vào trong thẻ <style> */
+	.pinyin-row {
+    		font-size: 16px;
+		font-weight: normal;
+   		color: #27ae60; /* Màu xanh lá dịu mắt */
+    		display: block;
+    		margin-top: 0px;
+		margin-bottom: 20px;
+	}
+
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="book-container" id="bookContent">
+    </div>
+
+<div class="floating-menu" id="floatMenu">
+    <div class="settings-box">
+        <strong>⚙️ Cài đặt</strong><hr>
+        Tốc độ: <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9" style="width: 100px;"><br>
+        <label><input type="checkbox" id="autoNext"> Tự động chuyển</label><br>
+	<button onclick="toggleAllPinyin()" style="width: 100%; margin-top: 10px;">🔤 Ẩn/Hiện Pinyin</button>
+        <button onclick="toggleDarkMode()" style="width: 100%; margin-top: 10px;">🌙 Dark Mode</button>
+    </div>
+    <button class="btn-main-float" onclick="document.getElementById('floatMenu').classList.toggle('show-settings')">🛠️</button>
+</div>
+
+<script>
+const sentences = [
+  {
+    cn_raw: `(二)我跟你不一样`,
+    cn_split: `(二) - 我 - 跟 - 你 - 不 - 一样`,
+    cn_pos: `(num) - pron - prep - pron - adv - adj`,
+    en_raw: `(2) I am different from you`,
+    en_split: `(2) - I - am - different - from - you`,
+    en_pos: `(num) - pron - v - adj - prep - pron`,
+    vi: `(Hai) Tôi không giống bạn`,
+    pinyin: `(Èr) Wǒ gēn nǐ bù yīyàng`
+  },
+  {
+    cn_raw: `麦克:这次你考得怎么样?`,
+    cn_split: `麦克 - 这次 - 你 - 考 - 得 - 怎么样`,
+    cn_pos: `n - n - pron - v - part - pron`,
+    en_raw: `Mike: How did you do on the exam this time?`,
+    en_split: `Mike - How - did - you - do - on - the - exam - this - time`,
+    en_pos: `n - adv - aux - pron - v - prep - art - n - det - n`,
+    vi: `Mike: Lần này bạn thi thế nào?`,
+    pinyin: `Màikè: Zhècì nǐ kǎo de zěnmeyàng?`
+  },
+  {
+    cn_raw: `玛丽:还可以,综合课考了95分,听力跟阅读一样,都是90分,口语考得不太好,只考了85分。`,
+    cn_split: `玛丽 - 还 - 可以 - 综合 - 课 - 考 - 了 - 95 - 分 - 听力 - 跟 - 阅读 - 一样 - 都 - 是 - 90 - 分 - 口语 - 考 - 得 - 不 - 太 - 好 - 只 - 考 - 了 - 85 - 分`,
+    cn_pos: `n - adv - adj - adj - n - v - part - num - mw - n - prep - n - adj - adv - v - num - mw - n - v - part - adv - adv - adj - adv - v - part - num - mw`,
+    en_raw: `Mary: Not bad, I got 95 on the comprehensive course, listening is the same as reading, both are 90, speaking was not so good, I only got 85.`,
+    en_split: `Mary - Not - bad - I - got - 95 - on - the - comprehensive - course - listening - is - the - same - as - reading - both - are - 90 - speaking - was - not - so - good - I - only - got - 85`,
+    en_pos: `n - adv - adj - pron - v - num - prep - art - adj - n - n - v - art - adj - prep - n - pron - v - num - n - v - adv - adv - adj - pron - adv - v - num`,
+    vi: `Mary: Cũng được, môn tổng hợp thi được 95 điểm, nghe hiểu giống với đọc hiểu, đều là 90 điểm, khẩu ngữ thi không tốt lắm, chỉ được 85 điểm.`,
+    pinyin: `Mǎlì: Hái kěyǐ, zōnghé kè kǎole jiǔshíwǔ fēn, tīnglì gēn yuèdú yīyàng, dōu shì jiǔshí fēn, kǒuyǔ kǎo de bù tài hǎo, zhǐ kǎole bāshíwǔ fēn.`
+  },
+  {
+    cn_raw: `你呢?`,
+    cn_split: `你 - 呢`,
+    cn_pos: `pron - part`,
+    en_raw: `How about you?`,
+    en_split: `How - about - you`,
+    en_pos: `adv - prep - pron`,
+    vi: `Còn bạn thì sao?`,
+    pinyin: `Nǐ ne?`
+  },
+  {
+    cn_raw: `麦克:你比我考得好。`,
+    cn_split: `麦克 - 你 - 比 - 我 - 考 - 得 - 好`,
+    cn_pos: `n - pron - prep - pron - v - part - adj`,
+    en_raw: `Mike: You did better than me on the exam.`,
+    en_split: `Mike - You - did - better - than - me - on - the - exam`,
+    en_pos: `n - pron - v - adj - prep - pron - prep - art - n`,
+    vi: `Mike: Bạn thi tốt hơn mình.`,
+    pinyin: `Màikè: Nǐ bǐ wǒ kǎo de hǎo.`
+  },
+  {
+    cn_raw: `我的阅读跟你考得一样,综合课和听力课都没有你考得好,只得了80分。`,
+    cn_split: `我 - 的 - 阅读 - 跟 - 你 - 考 - 得 - 一样 - 综合 - 课 - 和 - 听力 - 课 - 都 - 没有 - 你 - 考 - 得 - 好 - 只 - 得 - 了 - 80 - 分`,
+    cn_pos: `pron - part - n - prep - pron - v - part - adj - adj - n - conj - n - n - adv - v - pron - v - part - adj - adv - v - part - num - mw`,
+    en_raw: `My reading is the same as yours, but neither comprehensive nor listening is as good as yours, I only got 80.`,
+    en_split: `My - reading - is - the - same - as - yours - but - neither - comprehensive - nor - listening - is - as - good - as - yours - I - only - got - 80`,
+    en_pos: `pron - n - v - art - adj - prep - pron - conj - conj - adj - conj - n - v - adv - adj - prep - pron - pron - adv - v - num`,
+    vi: `Đọc hiểu của mình giống với bạn, môn tổng hợp và môn nghe đều không thi tốt bằng bạn, chỉ được 80 điểm.`,
+    pinyin: `Màikè: Wǒ de yuèdú gēn nǐ kǎo de yīyàng, zōnghé kè hé tīnglì kè dōu méiyǒu nǐ kǎo de hǎo, zhǐ déle bāshí fēn.`
+  },
+  {
+    cn_raw: `玛丽:听写我没考好,有的汉字不会写。`,
+    cn_split: `玛丽 - 听写 - 我 - 没 - 考 - 好 - 有的 - 汉字 - 不 - 会 - 写`,
+    cn_pos: `n - n - pron - adv - v - adj - pron - n - adv - v - v`,
+    en_raw: `Mary: I didn't do well on the dictation, I couldn't write some Chinese characters.`,
+    en_split: `Mary - I - did - not - do - well - on - the - dictation - I - could - not - write - some - Chinese - characters`,
+    en_pos: `n - pron - v - adv - v - adv - prep - art - n - pron - v - adv - v - det - adj - n`,
+    vi: `Mary: Chính tả mình thi không tốt, có những chữ Hán không biết viết.`,
+    pinyin: `Mǎlì: Tīngxiě wǒ méi kǎo hǎo, yǒude hànzì bù huì xiě.`
+  },
+  {
+    cn_raw: `麦克:好了,不谈考试了。`,
+    cn_split: `麦克 - 好了 - 不 - 谈 - 考试 - 了`,
+    cn_pos: `n - adj - adv - v - n - part`,
+    en_raw: `Mike: Okay, let's not talk about exams anymore.`,
+    en_split: `Mike - Okay - let - us - not - talk - about - exams - anymore`,
+    en_pos: `n - adj - v - pron - adv - v - prep - n - adv`,
+    vi: `Mike: Được rồi, không bàn chuyện thi cử nữa.`,
+    pinyin: `Màikè: Hǎole, bù tán kǎoshì le.`
+  },
+  {
+    cn_raw: `我问你,周末有什么打算?`,
+    cn_split: `我 - 问 - 你 - 周末 - 有 - 什么 - 打算`,
+    cn_pos: `pron - v - pron - n - v - pron - n`,
+    en_raw: `I ask you, what are your plans for the weekend?`,
+    en_split: `I - ask - you - what - are - your - plans - for - the - weekend`,
+    en_pos: `pron - v - pron - pron - v - pron - n - prep - art - n`,
+    vi: `Mình hỏi bạn, cuối tuần có dự định gì không?`,
+    pinyin: `Wǒ wèn nǐ, zhōumò yǒu shéme dǎsuàn?`
+  },
+  {
+    cn_raw: `出去玩儿吗?`,
+    cn_split: `出去 - 玩儿 - 吗`,
+    cn_pos: `v - v - part`,
+    en_raw: `Are you going out to play?`,
+    en_split: `Are - you - going - out - to - play`,
+    en_pos: `v - pron - v - adv - part - v`,
+    vi: `Có đi chơi không?`,
+    pinyin: `Chūqù wánr ma?`
+  },
+  {
+    cn_raw: `玛丽:出去。`,
+    cn_split: `玛丽 - 出去`,
+    cn_pos: `n - v`,
+    en_raw: `Mary: Going out.`,
+    en_split: `Mary - Going - out`,
+    en_pos: `n - v - adv`,
+    vi: `Mary: Có đi.`,
+    pinyin: `Mǎlì: Chūqù.`
+  },
+  {
+    cn_raw: `最近,我常到历史博物馆去参观。`,
+    cn_split: `最近 - 我 - 常 - 到 - 历史 - 博物馆 - 去 - 参观`,
+    cn_pos: `n - pron - adv - prep - n - n - v - v`,
+    en_raw: `Recently, I often go to the History Museum to visit.`,
+    en_split: `Recently - I - often - go - to - the - History - Museum - to - visit`,
+    en_pos: `adv - pron - adv - v - prep - art - n - n - part - v`,
+    vi: `Dạo này, mình thường đến Bảo tàng Lịch sử để tham quan.`,
+    pinyin: `Mǎlì: Zuìjìn, wǒ cháng dào lìshǐ bówùguǎn qù cānguān.`
+  },
+  {
+    cn_raw: `麦克:是吗?你怎么对历史产生兴趣了?`,
+    cn_split: `麦克 - 是 - 吗 - 你 - 怎么 - 对 - 历史 - 产生 - 兴趣 - 了`,
+    cn_pos: `n - v - part - pron - adv - prep - n - v - n - part`,
+    en_raw: `Mike: Really? How did you become interested in history?`,
+    en_split: `Mike - Really - How - did - you - become - interested - in - history`,
+    en_pos: `n - adv - adv - aux - pron - v - adj - prep - n`,
+    vi: `Mike: Thế à? Sao bạn lại nảy sinh hứng thú với lịch sử vậy?`,
+    pinyin: `Màikè: Shì ma? Nǐ zěnmeyàng duì lìshǐ chǎnshēng xìngqù le?`
+  },
+  {
+    cn_raw: `玛丽:学了京剧以后,我就对中国历史产生了兴趣。`,
+    cn_split: `玛丽 - 学 - 了 - 京剧 - 以后 - 我 - 就 - 对 - 中国 - 历史 - 产生 - 了 - 兴趣`,
+    cn_pos: `n - v - part - n - n - pron - adv - prep - n - n - v - part - n`,
+    en_raw: `Mary: After studying Peking Opera, I became interested in Chinese history.`,
+    en_split: `Mary - After - studying - Peking - Opera - I - became - interested - in - Chinese - history`,
+    en_pos: `n - prep - v - adj - n - pron - v - adj - prep - adj - n`,
+    vi: `Mary: Sau khi học Kinh kịch, mình liền nảy sinh hứng thú với lịch sử Trung Quốc.`,
+    pinyin: `Mǎlì: Xuéle jīngjù yǐhòu, wǒ jiù duì Zhōngguó lìshǐ chǎnshēngle xìngqù.`
+  },
+  {
+    cn_raw: `有一天,我在书店买到了一本画册,是介绍中国历史的。`,
+    cn_split: `有 - 一天 - 我 - 在 - 书店 - 买 - 到 - 了 - 一 - 本 - 画册 - 是 - 介绍 - 中国 - 历史 - 的`,
+    cn_pos: `v - n - pron - prep - n - v - v - part - num - mw - n - v - v - n - n - part`,
+    en_raw: `One day, I bought a picture album in the bookstore that introduces Chinese history.`,
+    en_split: `One - day - I - bought - a - picture - album - in - the - bookstore - that - introduces - Chinese - history`,
+    en_pos: `num - n - pron - v - art - n - n - prep - art - n - pron - v - adj - n`,
+    vi: `Có một ngày, mình mua được một cuốn sách ảnh ở hiệu sách, là giới thiệu về lịch sử Trung Quốc.`,
+    pinyin: `Yǒu yītiān, wǒ zài shūdiàn mǎidàole yī běn huàcè, shì jièshào Zhōngguó lìshǐ de.`
+  },
+  {
+    cn_raw: `看了以后,我就想到历史博物馆去看看。`,
+    cn_split: `看 - 了 - 以后 - 我 - 就 - 想 - 到 - 历史 - 博物馆 - 去 - 看看`,
+    cn_pos: `v - part - n - pron - adv - v - prep - n - n - v - v`,
+    en_raw: `After reading it, I wanted to go to the History Museum to take a look.`,
+    en_split: `After - reading - it - I - wanted - to - go - to - the - History - Museum - to - take - a - look`,
+    en_pos: `prep - v - pron - pron - v - part - v - prep - art - n - n - part - v - art - n`,
+    vi: `Sau khi xem xong, mình liền muốn đến bảo tàng lịch sử để xem thử.`,
+    pinyin: `Kànle yǐhòu, wǒ jiù xiǎng dào lìshǐ bówùguǎn qù kànkan.`
+  },
+  {
+    cn_raw: `麦克:你打算研究中国历史吗?`,
+    cn_split: `麦克 - 你 - 打算 - 研究 - 中国 - 历史 - 吗`,
+    cn_pos: `n - pron - v - v - n - n - part`,
+    en_raw: `Mike: Do you plan to study Chinese history?`,
+    en_split: `Mike - Do - you - plan - to - study - Chinese - history`,
+    en_pos: `n - aux - pron - v - part - v - adj - n`,
+    vi: `Mike: Bạn định nghiên cứu lịch sử Trung Quốc à?`,
+    pinyin: `Màikè: Nǐ dǎsuàn yánjiū Zhōngguó lìshǐ ma?`
+  },
+  {
+    cn_raw: `玛丽:不,我只是对中国历史感兴趣。`,
+    cn_split: `玛丽 - 不 - 我 - 只是 - 对 - 中国 - 历史 - 感 - 兴趣`,
+    cn_pos: `n - adv - pron - adv - prep - n - n - v - n`,
+    en_raw: `Mary: No, I am just interested in Chinese history.`,
+    en_split: `Mary - No - I - am - just - interested - in - Chinese - history`,
+    en_pos: `n - adv - pron - v - adv - adj - prep - adj - n`,
+    vi: `Mary: Không, mình chỉ là có hứng thú với lịch sử Trung Quốc thôi.`,
+    pinyin: `Mǎlì: Bù, wǒ zhǐshì duì Zhōngguó lìshǐ gǎn xìngqù.`
+  },
+  {
+    cn_raw: `麦克:我跟你不一样,你喜欢老的,我喜欢新的。`,
+    cn_split: `麦克 - 我 - 跟 - 你 - 不 - 一样 - 你 - 喜欢 - 老 - 的 - 我 - 喜欢 - 新 - 的`,
+    cn_pos: `n - pron - prep - pron - adv - adj - pron - v - adj - part - pron - v - adj - part`,
+    en_raw: `Mike: I am different from you, you like the old ones, I like the new ones.`,
+    en_split: `Mike - I - am - different - from - you - you - like - the - old - ones - I - like - the - new - ones`,
+    en_pos: `n - pron - v - adj - prep - pron - pron - v - art - adj - n - pron - v - art - adj - n`,
+    vi: `Mike: Mình không giống bạn, bạn thích cái cũ, mình thích cái mới.`,
+    pinyin: `Màikè: Wǒ gēn nǐ bù yīyàng, nǐ xǐhuān lǎo de, wǒ xǐhuān xīn de.`
+  },
+  {
+    cn_raw: `我对中国改革开放以后的一切都很感兴趣。`,
+    cn_split: `我 - 对 - 中国 - 改革 - 开放 - 以后 - 的 - 一切 - 都 - 很 - 感 - 兴趣`,
+    cn_pos: `pron - prep - n - v - v - n - part - pron - adv - adv - v - n`,
+    en_raw: `I am very interested in everything since China's reform and opening up.`,
+    en_split: `I - am - very - interested - in - everything - since - China's - reform - and - opening - up`,
+    en_pos: `pron - v - adv - adj - prep - pron - prep - n - n - conj - v - adv`,
+    vi: `Mình rất có hứng thú với tất cả mọi thứ sau khi Trung Quốc cải cách mở cửa.`,
+    pinyin: `Wǒ duì Zhōngguó gǎigé kāifàng yǐhòu de yīqiè dōu hěn gǎn xìngqù.`
+  }
+];
+// Cập nhật hàm render để truyền dữ liệu an toàn hơn
+function renderBook() {
+    const container = document.getElementById('bookContent');
+    sentences.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'sentence-item';
+        item.innerHTML = `
+            <div class="text-content">
+                <div class="row-cn">
+                    <span id="cn-txt-${i}">${s.cn_raw}</span>
+                </div>
+                <div id="cn-pos-${i}" class="pos-tag hidden">${s.cn_pos}</div>
+                <div id="pinyin-${i}" class="pinyin-row hidden">${s.pinyin || ''}</div>
+                <div class="row-en">
+                    <span id="en-txt-${i}">${s.en_raw}</span>
+                </div>
+                <div id="en-pos-${i}" class="pos-tag hidden">${s.en_pos}</div>
+                <div class="row-vi">${s.vi}</div>
+            </div>
+            <div class="control-sidebar">
+                <button class="btn-icon" onclick="playSpeech(${i}, 'cn')">♘</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'cn')">♔</button>
+                <button class="btn-icon" onclick="playSpeech(${i}, 'en')">♖</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'en')">♕</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+// Hàm phát âm mới: Lấy dữ liệu trực tiếp từ mảng thay vì truyền chuỗi qua HTML
+// Hàm phát âm: Tự động duy trì ngôn ngữ đang chọn
+function playSpeech(index, langType) {
+    // 1. Dừng mọi âm thanh đang phát để tránh chồng chéo
+    window.speechSynthesis.cancel(); 
+
+    let textToRead = "";
+    let langCode = "";
+
+    // 2. Xác định nội dung và mã ngôn ngữ dựa trên lựa chọn của người dùng
+    if (langType === 'cn') {
+        textToRead = sentences[index].cn_raw;
+        langCode = 'zh-CN';
+    } else {
+        textToRead = sentences[index].en_raw;
+        langCode = 'en-US';
+    }
+
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = textToRead;
+    msg.lang = langCode;
+    msg.rate = document.getElementById('rate').value;
+    
+    // 3. Hiệu ứng Highlight: Tô màu câu đang đọc để dễ theo dõi
+    const allItems = document.getElementsByClassName('sentence-item');
+    // Xóa màu của tất cả các câu khác
+    Array.from(allItems).forEach(item => item.style.backgroundColor = "transparent");
+    // Tô màu vàng nhạt cho câu hiện tại
+    allItems[index].style.backgroundColor = "rgba(230, 126, 34, 0.1)";
+
+    // 4. Xử lý khi kết thúc câu
+    msg.onend = () => {
+        const isAuto = document.getElementById('autoNext').checked;
+        if (isAuto && index < sentences.length - 1) {
+            setTimeout(() => {
+                // QUAN TRỌNG: Truyền đúng langType hiện tại vào lần gọi tiếp theo
+                playSpeech(index + 1, langType); 
+                
+                // Tự động cuộn màn hình đến câu tiếp theo
+                allItems[index + 1].scrollIntoView({
+                    behavior: "smooth", 
+                    block: "center"
+                });
+            }, 500); // Nghỉ 0.5 giây giữa các câu để người dùng kịp ngấm
+        }
+    };
+
+    window.speechSynthesis.speak(msg);
+}
+function toggleMode(index, lang) {
+    const txtSpan = document.getElementById(`${lang}-txt-${index}`);
+    const posSpan = document.getElementById(`${lang}-pos-${index}`);
+    const isOriginal = txtSpan.innerText === sentences[index][`${lang}_raw`];
+
+    txtSpan.innerText = isOriginal ? sentences[index][`${lang}_split`] : sentences[index][`${lang}_raw`];
+    posSpan.classList.toggle('hidden');
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+
+function toggleAllPinyin() {
+    // 1. Lấy tất cả các phần tử có class là pinyin-row
+    const pinyinElements = document.getElementsByClassName('pinyin-row');
+    
+    // 2. Kiểm tra nếu không tìm thấy phần tử nào (báo lỗi ra Console để kiểm tra)
+    if (pinyinElements.length === 0) {
+        console.error("Không tìm thấy phần tử nào có class 'pinyin-row'");
+        return;
+    }
+
+    // 3. Duyệt qua từng phần tử và bật/tắt class 'hidden'
+    for (let i = 0; i < pinyinElements.length; i++) {
+        pinyinElements[i].classList.toggle('hidden');
+    }
+}
+
+function speak(text, lang, index) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = document.getElementById('rate').value;
+
+    msg.onend = () => {
+        if (document.getElementById('autoNext').checked && index < sentences.length - 1) {
+            setTimeout(() => {
+                speak(sentences[index + 1].cn_raw, 'zh-CN', index + 1);
+                document.getElementsByClassName('sentence-item')[index+1].scrollIntoView({behavior: "smooth", block: "center"});
+            }, 1200);
+        }
+    };
+    window.speechSynthesis.speak(msg);
+}
+
+renderBook();
+</script>
+</body>
+</html>

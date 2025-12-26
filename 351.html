@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
+    <title>Sách Đa Ngôn Ngữ</title>
+    <style>
+        :root {
+            --bg-body: #dcdcdc;
+            --bg-book: #f4f1ea;
+            --text-main: #1a1a1a;
+            --text-sub: #555;
+            --accent: #e67e22;
+            --border: #d1ccc0;
+        }
+
+        /* Chế độ Dark Mode */
+        .dark-mode {
+            --bg-body: #1a1a1b;
+            --bg-book: #2c2c2e;
+            --text-main: #e1e1e1;
+            --text-sub: #b0b0b0;
+            --accent: #f39c12;
+            --border: #444;
+        }
+
+        body { 
+            margin: 0; padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-book);
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sentence-item {
+            display: flex;
+            padding: 20px 5%; /* Lề trái 5% theo yêu cầu */
+            border-bottom: 1px solid var(--border);
+            word-wrap: break-word; /* Tự động xuống dòng */
+        }
+
+        .text-content {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .row-cn { font-family: "Noto Serif SC","Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 1.8rem; font-weight: normal; margin-bottom: 20px; line-height: 1.4; }
+        .row-en { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); opacity: 0.9; }
+        .row-vi { font-size: 1rem; color: var(--text-sub); font-style: italic; }
+        
+        .pos-tag { font-size: 0.85rem; color: var(--accent); display: block; margin-bottom: 20px; margin-top: 0px; font-weight: normal; }
+
+        /* Phím chức năng dạng cột icon */
+        .control-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .btn-icon:hover { background: #eee; transform: scale(1.1); }
+
+        /* Menu nổi cố định ở góc dưới bên phải */
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .settings-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none; /* Ẩn mặc định */
+            color: #333;
+            font-size: 14px;
+        }
+
+        .show-settings .settings-box { display: block; }
+
+        .btn-main-float {
+            width: 50px;
+            height: 50px;
+            background: #34495e;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+
+	/* Thêm vào trong thẻ <style> */
+	.pinyin-row {
+    		font-size: 16px;
+		font-weight: normal;
+   		color: #27ae60; /* Màu xanh lá dịu mắt */
+    		display: block;
+    		margin-top: 0px;
+		margin-bottom: 20px;
+	}
+
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="book-container" id="bookContent">
+    </div>
+
+<div class="floating-menu" id="floatMenu">
+    <div class="settings-box">
+        <strong>⚙️ Cài đặt</strong><hr>
+        Tốc độ: <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9" style="width: 100px;"><br>
+        <label><input type="checkbox" id="autoNext"> Tự động chuyển</label><br>
+	<button onclick="toggleAllPinyin()" style="width: 100%; margin-top: 10px;">🔤 Ẩn/Hiện Pinyin</button>
+        <button onclick="toggleDarkMode()" style="width: 100%; margin-top: 10px;">🌙 Dark Mode</button>
+    </div>
+    <button class="btn-main-float" onclick="document.getElementById('floatMenu').classList.toggle('show-settings')">🛠️</button>
+</div>
+
+<script>
+const sentences = [
+  {
+    cn_raw: `(一)我吃过中药。`,
+    cn_split: `我 - 吃 - 过 - 中药`,
+    cn_pos: `Đại từ - Động từ - Trợ từ động thái - Danh từ`,
+    en_raw: `(1) I have taken Chinese medicine.`,
+    en_split: `I - have taken - Chinese medicine`,
+    en_pos: `Pronoun - Verb (Present Perfect) - Noun Phrase`,
+    vi: `(I) Tôi đã từng uống thuốc Bắc.`,
+    pinyin: `(Yī) Wǒ chīguò Zhōngyào.`
+  },
+  {
+    cn_raw: `(山本和爱德华谈来中国后的经历…)`,
+    cn_split: `山本 - 和 - 爱德华 - 谈 - 来 - 中国 - 后 - 的 - 经历`,
+    cn_pos: `Danh từ - Liên từ - Danh từ - Động từ - Động từ - Danh từ - Danh từ chỉ thời gian - Trợ từ kết cấu - Danh từ`,
+    en_raw: `(Yamamoto and Edward talk about their experiences after coming to China...)`,
+    en_split: `Yamamoto and Edward - talk - about - their experiences - after coming to China`,
+    en_pos: `Noun Phrase - Verb - Preposition - Noun Phrase - Prepositional Phrase`,
+    vi: `(Sơn Bản và Ái Đức Hoa nói về trải nghiệm sau khi đến Trung Quốc...)`,
+    pinyin: `(Shānběn hé Àidéhuá tán lái Zhōngguó hòu de jīnglì…)`
+  },
+  {
+    cn_raw: `爱德华:山本,你的感冒好了吗?`,
+    cn_split: `爱德华 - : - 山本 - , - 你 - 的 - 感冒 - 好 - 了 - 吗 - ?`,
+    cn_pos: `Danh từ - Dấu chia - Danh từ - Dấu phẩy - Đại từ - Trợ từ kết cấu - Danh từ - Tính từ - Trợ từ ngữ khí - Trợ từ nghi vấn`,
+    en_raw: `Edward: Yamamoto, is your cold better?`,
+    en_split: `Edward - : - Yamamoto - , - is - your cold - better - ?`,
+    en_pos: `Noun - Noun - Verb - Noun Phrase - Adjective`,
+    vi: `Ái Đức Hoa: Sơn Bản, bệnh cảm của bạn đã khỏi chưa?`,
+    pinyin: `Àidéhuá: Shānběn, nǐ de gǎnmào hǎole ma?`
+  },
+  {
+    cn_raw: `山本:好了。`,
+    cn_split: `山本 - : - 好 - 了`,
+    cn_pos: `Danh từ - Dấu chia - Tính từ - Trợ từ ngữ khí`,
+    en_raw: `Yamamoto: It's better.`,
+    en_split: `Yamamoto - : - It - is - better`,
+    en_pos: `Noun - Pronoun - Verb - Adjective`,
+    vi: `Sơn Bản: Khỏi rồi.`,
+    pinyin: `Shānběn: Hǎole.`
+  },
+  {
+    cn_raw: `来中国以后我已经得过三次感冒了。`,
+    cn_split: `来 - 中国 - 以后 - 我 - 已经 - 得 - 过 - 三 - 次 - 感冒 - 了`,
+    cn_pos: `Động từ - Danh từ - Danh từ chỉ thời gian - Đại từ - Phó từ - Động từ - Trợ từ động thái - Số từ - Lượng từ - Danh từ - Trợ từ ngữ khí`,
+    en_raw: `I have already had colds three times since I came to China.`,
+    en_split: `I - have already had - colds - three times - since I came to China`,
+    en_pos: `Pronoun - Verb Phrase - Noun - Adverbial - Prepositional Phrase`,
+    vi: `Sau khi đến Trung Quốc, tôi đã bị cảm ba lần rồi.`,
+    pinyin: `Lái Zhōngguó yǐhòu wǒ yǐjīng déguò sāncì gǎnmào le.`
+  },
+  {
+    cn_raw: `爱德华:我一次病也没有得过。`,
+    cn_split: `爱德华 - : - 我 - 一 - 次 - 病 - 也 - 没有 - 得 - 过`,
+    cn_pos: `Danh từ - Dấu chia - Đại từ - Số từ - Lượng từ - Danh từ - Phó từ - Phó từ phủ định - Động từ - Trợ từ động thái`,
+    en_raw: `Edward: I haven't been sick even once.`,
+    en_split: `Edward - : - I - haven't been - sick - even once`,
+    en_pos: `Noun - Pronoun - Verb Phrase - Adjective - Adverbial`,
+    vi: `Ái Đức Hoa: Tôi chưa từng bị bệnh một lần nào.`,
+    pinyin: `Àidéhuá: Wǒ yīcì bìng yě méiyǒu déguò.`
+  },
+  {
+    cn_raw: `山本:你身体真不错。`,
+    cn_split: `山本 - : - 你 - 身体 - 真 - 不错`,
+    cn_pos: `Danh từ - Dấu chia - Đại từ - Danh từ - Phó từ - Tính từ`,
+    en_raw: `Yamamoto: Your health is really good.`,
+    en_split: `Yamamoto - : - Your health - is - really good`,
+    en_pos: `Noun - Noun Phrase - Verb - Adjective Phrase`,
+    vi: `Sơn Bản: Sức khỏe của bạn thật tốt.`,
+    pinyin: `Shānběn: Nǐ shēntǐ zhēn bùcuò.`
+  },
+  {
+    cn_raw: `我还住过一次院呢,看过中医,也吃过中药。`,
+    cn_split: `我 - 还 - 住 - 过 - 一 - 次 - 院 - 呢 - , - 看 - 过 - 中医 - , - 也 - 吃 - 过 - 中药`,
+    cn_pos: `Đại từ - Phó từ - Động từ - Trợ từ động thái - Số từ - Lượng từ - Danh từ - Trợ từ ngữ khí - Dấu phẩy - Động từ - Trợ từ động thái - Danh từ - Dấu phẩy - Phó từ - Động từ - Trợ từ động thái - Danh từ`,
+    en_raw: `I have also been hospitalized once, seen a TCM doctor, and taken Chinese medicine.`,
+    en_split: `I - have also been hospitalized - once - , - seen - a TCM doctor - , - and - taken - Chinese medicine`,
+    en_pos: `Pronoun - Verb Phrase - Adverbial - Verb - Noun Phrase - Conjunction - Verb - Noun Phrase`,
+    vi: `Tôi còn từng nằm viện một lần nữa, đã khám đông y và cũng đã uống thuốc Bắc.`,
+    pinyin: `Wǒ hái zhùguò yīcì yuàn ne, kànguò zhōngyī, yě chīguò zhōngyào.`
+  },
+  {
+    cn_raw: `爱德华:听说中药很苦,是吗?`,
+    cn_split: `爱德华 - : - 听说 - 中药 - 很 - 苦 - , - 是 - 吗 - ?`,
+    cn_pos: `Danh từ - Dấu chia - Động từ - Danh từ - Phó từ - Tính từ - Dấu phẩy - Động từ - Trợ từ nghi vấn`,
+    en_raw: `Edward: I heard that Chinese medicine is very bitter, is it?`,
+    en_split: `Edward - : - I - heard - that - Chinese medicine - is - very bitter - , - is it - ?`,
+    en_pos: `Noun - Pronoun - Verb - Conjunction - Noun Phrase - Verb - Adjective - Phrase`,
+    vi: `Ái Đức Hoa: Nghe nói thuốc Bắc rất đắng, có phải không?`,
+    pinyin: `Àidéhuá: Tīngshuō zhōngyào hěn kǔ, shì ma?`
+  },
+  {
+    cn_raw: `山本:有的苦,有的不苦。`,
+    cn_split: `山本 - : - 有的 - 苦 - , - 有的 - 不 - 苦`,
+    cn_pos: `Danh từ - Dấu chia - Đại từ - Tính từ - Dấu phẩy - Đại từ - Phó từ - Tính từ`,
+    en_raw: `Yamamoto: Some are bitter, some are not.`,
+    en_split: `Yamamoto - : - Some - are - bitter - , - some - are - not`,
+    en_pos: `Noun - Pronoun - Verb - Adjective - Pronoun - Verb - Adverb`,
+    vi: `Sơn Bản: Có loại đắng, có loại không đắng.`,
+    pinyin: `Shānběn: Yǒude kǔ, yǒude bù kǔ.`
+  },
+  {
+    cn_raw: `我喝的是中成药,甜甜的,一点儿也不苦。`,
+    cn_split: `我 - 喝 - 的 - 是 - 中成药 - , - 甜甜 - 的 - , - 一点儿 - 也 - 不 - 苦`,
+    cn_pos: `Đại từ - Động từ - Trợ từ kết cấu - Động từ - Danh từ - Dấu phẩy - Tính từ - Trợ từ kết cấu - Danh từ - Phó từ - Phó từ - Tính từ`,
+    en_raw: `What I drink is prepared Chinese medicine, it's sweet, not bitter at all.`,
+    en_split: `What I drink - is - prepared Chinese medicine - , - it - is - sweet - , - not bitter - at all`,
+    en_pos: `Noun Clause - Verb - Noun Phrase - Pronoun - Verb - Adjective - Adjective - Adverbial`,
+    vi: `Thứ tôi uống là thuốc Bắc thành phẩm, ngọt ngọt, một chút cũng không đắng.`,
+    pinyin: `Wǒ hē de shì zhōngchéngyào, tiántián de, yīdiǎnr yě bù kǔ.`
+  },
+  {
+    cn_raw: `吃了这些中药我的病就好了。`,
+    cn_split: `吃 - 了 - 这些 - 中药 - 我 - 的 - 病 - 就 - 好 - 了`,
+    cn_pos: `Động từ - Trợ từ động thái - Đại từ chỉ định - Danh từ - Đại từ - Trợ từ kết cấu - Danh từ - Phó từ - Tính từ - Trợ từ ngữ khí`,
+    en_raw: `After taking these Chinese medicines, my illness got better.`,
+    en_split: `After taking - these Chinese medicines - , - my illness - got - better`,
+    en_pos: `Prepositional Phrase - Noun Phrase - Noun Phrase - Verb - Adjective`,
+    vi: `Uống những loại thuốc Bắc này xong bệnh của tôi đã khỏi rồi.`,
+    pinyin: `Chīle zhèxiē zhōngyào wǒ de bìng jiù hǎole.`
+  },
+  {
+    cn_raw: `爱德华:我听说中医看病很有意思。`,
+    cn_split: `爱德华 - : - 我 - 听说 - 中医 - 看病 - 很 - 有意思`,
+    cn_pos: `Danh từ - Dấu chia - Đại từ - Động từ - Danh từ - Động từ tân ngữ - Phó từ - Tính từ`,
+    en_raw: `Edward: I heard that TCM treatment is very interesting.`,
+    en_split: `Edward - : - I - heard - that - TCM treatment - is - very interesting`,
+    en_pos: `Noun - Pronoun - Verb - Conjunction - Noun Phrase - Verb - Adjective`,
+    vi: `Ái Đức Hoa: Tôi nghe nói Đông y khám bệnh rất thú vị.`,
+    pinyin: `Àidéhuá: Wǒ tīngshuō zhōngyī kànbìng hěn yǒuyìsi.`
+  },
+  {
+    cn_raw: `山本:中医看病不化验,只用手摸一摸脉就给你开药方。`,
+    cn_split: `山本 - : - 中医 - 看病 - 不 - 化验 - , - 只 - 用 - 手 - 摸一摸 - 脉 - 就 - 给 - 你 - 开 - 药方`,
+    cn_pos: `Danh từ - Dấu chia - Danh từ - Động từ tân ngữ - Phó từ - Động từ - Dấu phẩy - Phó từ - Giới từ - Danh từ - Động từ (lặp) - Danh từ - Phó từ - Giới từ - Đại từ - Động từ - Danh từ`,
+    en_raw: `Yamamoto: TCM doesn't involve lab tests, it just uses hands to feel the pulse and then prescribes a recipe for you.`,
+    en_split: `Yamamoto - : - TCM - doesn't involve - lab tests - , - it - just - uses - hands - to feel - the pulse - and then - prescribes - a recipe - for you`,
+    en_pos: `Noun - Noun - Verb Phrase - Noun Phrase - Pronoun - Adverb - Verb - Noun - Infinitve - Noun Phrase - Adverb - Verb - Noun Phrase - Prepositional Phrase`,
+    vi: `Sơn Bản: Đông y khám bệnh không xét nghiệm, chỉ dùng tay bắt mạch là kê đơn thuốc cho bạn rồi.`,
+    pinyin: `Shānběn: Zhōngyī kànbìng bù huàyàn, zhǐ yòng shǒu mō yī mō mài jiù gěi nǐ kāi yàofāng.`
+  },
+  {
+    cn_raw: `还用按摩、针灸等方法给病人治病。`,
+    cn_split: `还 - 用 - 按摩 - 、 - 针灸 - 等 - 方法 - 给 - 病人 - 治病`,
+    cn_pos: `Phó từ - Động từ - Danh từ - Dấu liệt kê - Danh từ - Trợ từ - Danh từ - Giới từ - Danh từ - Động từ tân ngữ`,
+    en_raw: `It also uses methods like massage and acupuncture to treat patients.`,
+    en_split: `It - also - uses - methods - like massage and acupuncture - to treat - patients`,
+    en_pos: `Pronoun - Adverb - Verb - Noun Phrase - Prepositional Phrase - Infinitive - Noun`,
+    vi: `Còn dùng các phương pháp như xoa bóp, châm cứu để chữa bệnh cho bệnh nhân.`,
+    pinyin: `Hái yòng ànmó, zhēnjiǔ děng fāngfǎ gěi bìng rén zhìbìng.`
+  },
+  {
+    cn_raw: `爱德华:是打针吗?`,
+    cn_split: `爱德华 - : - 是 - 打针 - 吗`,
+    cn_pos: `Danh từ - Dấu chia - Động từ - Động từ tân ngữ - Trợ từ nghi vấn`,
+    en_raw: `Edward: Is it an injection?`,
+    en_split: `Edward - : - Is - it - an injection - ?`,
+    en_pos: `Noun - Verb - Pronoun - Noun Phrase`,
+    vi: `Ái Đức Hoa: Có phải tiêm không?`,
+    pinyin: `Àidéhuá: Shì dǎzhēn ma?`
+  },
+  {
+    cn_raw: `山本:不是打针,是扎针。`,
+    cn_split: `山本 - : - 不 - 是 - 打针 - , - 是 - 扎针`,
+    cn_pos: `Danh từ - Dấu chia - Phó từ - Động từ - Động từ tân ngữ - Dấu phẩy - Động từ - Động từ tân ngữ`,
+    en_raw: `Yamamoto: It's not an injection, it's acupuncture (needle insertion).`,
+    en_split: `Yamamoto - : - It - is not - an injection - , - it - is - needle insertion`,
+    en_pos: `Noun - Pronoun - Verb Phrase - Noun Phrase - Pronoun - Verb - Noun Phrase`,
+    vi: `Sơn Bản: Không phải tiêm, mà là châm kim.`,
+    pinyin: `Shānběn: Bùshì dǎzhēn, shì zhāzhēn.`
+  },
+  {
+    cn_raw: `爱德华:你针灸过吗?`,
+    cn_split: `爱德华 - : - 你 - 针灸 - 过 - 吗`,
+    cn_pos: `Danh từ - Dấu chia - Đại từ - Động từ - Trợ từ động thái - Trợ từ nghi vấn`,
+    en_raw: `Edward: Have you ever had acupuncture?`,
+    en_split: `Edward - : - Have - you - ever had - acupuncture - ?`,
+    en_pos: `Noun - Verb - Pronoun - Verb Phrase - Noun`,
+    vi: `Ái Đức Hoa: Bạn đã từng châm cứu chưa?`,
+    pinyin: `Àidéhuá: Nǐ zhēnjiǔguò ma?`
+  },
+  {
+    cn_raw: `山本:我按摩过,没有针灸过,但是见过。`,
+    cn_split: `山本 - : - 我 - 按摩 - 过 - , - 没有 - 针灸 - 过 - , - 但是 - 见 - 过`,
+    cn_pos: `Danh từ - Dấu chia - Đại từ - Động từ - Trợ từ động thái - Dấu phẩy - Phó từ phủ định - Động từ - Trợ từ động thái - Dấu phẩy - Liên từ - Động từ - Trợ từ động thái`,
+    en_raw: `Yamamoto: I've had a massage, haven't had acupuncture, but I've seen it.`,
+    en_split: `Yamamoto - : - I - have had - a massage - , - haven't had - acupuncture - , - but - have seen - it`,
+    en_pos: `Noun - Pronoun - Verb Phrase - Noun Phrase - Verb Phrase - Noun - Conjunction - Verb Phrase - Pronoun`,
+    vi: `Sơn Bản: Tôi đã từng xoa bóp, chưa từng châm cứu, nhưng đã nhìn thấy rồi.`,
+    pinyin: `Shānběn: Wǒ ànmóguò, méiyǒu zhēnjiǔguò, dànshì jiànguò.`
+  },
+  {
+    cn_raw: `爱德华:是什么样的针呢?`,
+    cn_split: `爱德华 - : - 是 - 什么 - 样 - 的 - 针 - 呢`,
+    cn_pos: `Danh từ - Dấu chia - Động từ - Đại từ nghi vấn - Lượng từ - Trợ từ kết cấu - Danh từ - Trợ từ ngữ khí`,
+    en_raw: `Edward: What kind of needle is it?`,
+    en_split: `Edward - : - What kind of needle - is - it - ?`,
+    en_pos: `Noun - Noun Phrase - Verb - Pronoun`,
+    vi: `Ái Đức Hoa: Đó là loại kim như thế nào?`,
+    pinyin: `Àidéhuá: Shì shénme yàng de zhēn ne?`
+  },
+  {
+    cn_raw: `山本:是一种很细很细的针。`,
+    cn_split: `山本 - : - 是 - 一 - 种 - 很 - 细 - 很 - 细 - 的 - 针`,
+    cn_pos: `Danh từ - Dấu chia - Động từ - Số từ - Lượng từ - Phó từ - Tính từ - Phó từ - Tính từ - Trợ từ kết cấu - Danh từ`,
+    en_raw: `Yamamoto: It's a very, very thin needle.`,
+    en_split: `Yamamoto - : - It - is - a very, very thin needle`,
+    en_pos: `Noun - Pronoun - Verb - Noun Phrase`,
+    vi: `Sơn Bản: Là một loại kim rất mảnh, rất mảnh.`,
+    pinyin: `Shānběn: Shì yīzhǒng hěn xì hěn xì de zhēn.`
+  },
+  {
+    cn_raw: `爱德华:没见过。`,
+    cn_split: `爱德华 - : - 没 - 见 - 过`,
+    cn_pos: `Danh từ - Dấu chia - Phó từ phủ định - Động từ - Trợ từ động thái`,
+    en_raw: `Edward: I haven't seen it.`,
+    en_split: `Edward - : - I - haven't - seen - it`,
+    en_pos: `Noun - Pronoun - Verb - Verb - Pronoun`,
+    vi: `Ái Đức Hoa: Chưa từng thấy.`,
+    pinyin: `Àidéhuá: Méi jiànguò.`
+  }
+];
+// Cập nhật hàm render để truyền dữ liệu an toàn hơn
+function renderBook() {
+    const container = document.getElementById('bookContent');
+    sentences.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'sentence-item';
+        item.innerHTML = `
+            <div class="text-content">
+                <div class="row-cn">
+                    <span id="cn-txt-${i}">${s.cn_raw}</span>
+                </div>
+                <div id="cn-pos-${i}" class="pos-tag hidden">${s.cn_pos}</div>
+                <div id="pinyin-${i}" class="pinyin-row hidden">${s.pinyin || ''}</div>
+                <div class="row-en">
+                    <span id="en-txt-${i}">${s.en_raw}</span>
+                </div>
+                <div id="en-pos-${i}" class="pos-tag hidden">${s.en_pos}</div>
+                <div class="row-vi">${s.vi}</div>
+            </div>
+            <div class="control-sidebar">
+                <button class="btn-icon" onclick="playSpeech(${i}, 'cn')">♘</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'cn')">♔</button>
+                <button class="btn-icon" onclick="playSpeech(${i}, 'en')">♖</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'en')">♕</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+// Hàm phát âm mới: Lấy dữ liệu trực tiếp từ mảng thay vì truyền chuỗi qua HTML
+// Hàm phát âm: Tự động duy trì ngôn ngữ đang chọn
+function playSpeech(index, langType) {
+    // 1. Dừng mọi âm thanh đang phát để tránh chồng chéo
+    window.speechSynthesis.cancel(); 
+
+    let textToRead = "";
+    let langCode = "";
+
+    // 2. Xác định nội dung và mã ngôn ngữ dựa trên lựa chọn của người dùng
+    if (langType === 'cn') {
+        textToRead = sentences[index].cn_raw;
+        langCode = 'zh-CN';
+    } else {
+        textToRead = sentences[index].en_raw;
+        langCode = 'en-US';
+    }
+
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = textToRead;
+    msg.lang = langCode;
+    msg.rate = document.getElementById('rate').value;
+    
+    // 3. Hiệu ứng Highlight: Tô màu câu đang đọc để dễ theo dõi
+    const allItems = document.getElementsByClassName('sentence-item');
+    // Xóa màu của tất cả các câu khác
+    Array.from(allItems).forEach(item => item.style.backgroundColor = "transparent");
+    // Tô màu vàng nhạt cho câu hiện tại
+    allItems[index].style.backgroundColor = "rgba(230, 126, 34, 0.1)";
+
+    // 4. Xử lý khi kết thúc câu
+    msg.onend = () => {
+        const isAuto = document.getElementById('autoNext').checked;
+        if (isAuto && index < sentences.length - 1) {
+            setTimeout(() => {
+                // QUAN TRỌNG: Truyền đúng langType hiện tại vào lần gọi tiếp theo
+                playSpeech(index + 1, langType); 
+                
+                // Tự động cuộn màn hình đến câu tiếp theo
+                allItems[index + 1].scrollIntoView({
+                    behavior: "smooth", 
+                    block: "center"
+                });
+            }, 500); // Nghỉ 0.5 giây giữa các câu để người dùng kịp ngấm
+        }
+    };
+
+    window.speechSynthesis.speak(msg);
+}
+function toggleMode(index, lang) {
+    const txtSpan = document.getElementById(`${lang}-txt-${index}`);
+    const posSpan = document.getElementById(`${lang}-pos-${index}`);
+    const isOriginal = txtSpan.innerText === sentences[index][`${lang}_raw`];
+
+    txtSpan.innerText = isOriginal ? sentences[index][`${lang}_split`] : sentences[index][`${lang}_raw`];
+    posSpan.classList.toggle('hidden');
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+
+function toggleAllPinyin() {
+    // 1. Lấy tất cả các phần tử có class là pinyin-row
+    const pinyinElements = document.getElementsByClassName('pinyin-row');
+    
+    // 2. Kiểm tra nếu không tìm thấy phần tử nào (báo lỗi ra Console để kiểm tra)
+    if (pinyinElements.length === 0) {
+        console.error("Không tìm thấy phần tử nào có class 'pinyin-row'");
+        return;
+    }
+
+    // 3. Duyệt qua từng phần tử và bật/tắt class 'hidden'
+    for (let i = 0; i < pinyinElements.length; i++) {
+        pinyinElements[i].classList.toggle('hidden');
+    }
+}
+
+function speak(text, lang, index) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = document.getElementById('rate').value;
+
+    msg.onend = () => {
+        if (document.getElementById('autoNext').checked && index < sentences.length - 1) {
+            setTimeout(() => {
+                speak(sentences[index + 1].cn_raw, 'zh-CN', index + 1);
+                document.getElementsByClassName('sentence-item')[index+1].scrollIntoView({behavior: "smooth", block: "center"});
+            }, 1200);
+        }
+    };
+    window.speechSynthesis.speak(msg);
+}
+
+renderBook();
+</script>
+</body>
+</html>

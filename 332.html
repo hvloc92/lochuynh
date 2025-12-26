@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
+    <title>Sách Đa Ngôn Ngữ</title>
+    <style>
+        :root {
+            --bg-body: #dcdcdc;
+            --bg-book: #f4f1ea;
+            --text-main: #1a1a1a;
+            --text-sub: #555;
+            --accent: #e67e22;
+            --border: #d1ccc0;
+        }
+
+        /* Chế độ Dark Mode */
+        .dark-mode {
+            --bg-body: #1a1a1b;
+            --bg-book: #2c2c2e;
+            --text-main: #e1e1e1;
+            --text-sub: #b0b0b0;
+            --accent: #f39c12;
+            --border: #444;
+        }
+
+        body { 
+            margin: 0; padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-book);
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sentence-item {
+            display: flex;
+            padding: 20px 5%; /* Lề trái 5% theo yêu cầu */
+            border-bottom: 1px solid var(--border);
+            word-wrap: break-word; /* Tự động xuống dòng */
+        }
+
+        .text-content {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .row-cn { font-family: "Noto Serif SC","Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 1.8rem; font-weight: normal; margin-bottom: 20px; line-height: 1.4; }
+        .row-en { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); opacity: 0.9; }
+        .row-vi { font-size: 1rem; color: var(--text-sub); font-style: italic; }
+        
+        .pos-tag { font-size: 0.85rem; color: var(--accent); display: block; margin-bottom: 20px; margin-top: 0px; font-weight: normal; }
+
+        /* Phím chức năng dạng cột icon */
+        .control-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .btn-icon:hover { background: #eee; transform: scale(1.1); }
+
+        /* Menu nổi cố định ở góc dưới bên phải */
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .settings-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none; /* Ẩn mặc định */
+            color: #333;
+            font-size: 14px;
+        }
+
+        .show-settings .settings-box { display: block; }
+
+        .btn-main-float {
+            width: 50px;
+            height: 50px;
+            background: #34495e;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+
+	/* Thêm vào trong thẻ <style> */
+	.pinyin-row {
+    		font-size: 16px;
+		font-weight: normal;
+   		color: #27ae60; /* Màu xanh lá dịu mắt */
+    		display: block;
+    		margin-top: 0px;
+		margin-bottom: 20px;
+	}
+
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="book-container" id="bookContent">
+    </div>
+
+<div class="floating-menu" id="floatMenu">
+    <div class="settings-box">
+        <strong>⚙️ Cài đặt</strong><hr>
+        Tốc độ: <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9" style="width: 100px;"><br>
+        <label><input type="checkbox" id="autoNext"> Tự động chuyển</label><br>
+	<button onclick="toggleAllPinyin()" style="width: 100%; margin-top: 10px;">🔤 Ẩn/Hiện Pinyin</button>
+        <button onclick="toggleDarkMode()" style="width: 100%; margin-top: 10px;">🌙 Dark Mode</button>
+    </div>
+    <button class="btn-main-float" onclick="document.getElementById('floatMenu').classList.toggle('show-settings')">🛠️</button>
+</div>
+
+<script>
+const sentences = [
+  {
+    cn_raw: `(二)我姐姐下个月就要结婚了`,
+    cn_split: `(二) - 我 - 姐姐 - 下 - 个 - 月 - 就要 - 结婚 - 了`,
+    cn_pos: `(num) - pron - n - adj - mw - n - adv - v - part`,
+    en_raw: `(2) My elder sister is getting married next month.`,
+    en_split: `(2) - My - elder - sister - is - getting - married - next - month`,
+    en_pos: `(num) - pron - adj - n - v - v - adj - adj - n`,
+    vi: `(Hai) Chị gái tôi tháng sau sắp kết hôn rồi.`,
+    pinyin: `(Èr) Wǒ jiějiě xià gè yuè jiùyào jiéhūn le`
+  },
+  {
+    cn_raw: `(山本高兴地在网上读信)`,
+    cn_split: `山本 - 高兴 - 地 - 在 - 网上 - 读 - 信`,
+    cn_pos: `n - adj - part - prep - n - v - n`,
+    en_raw: `(Yamamoto is happily reading a letter online)`,
+    en_split: `Yamamoto - is - happily - reading - a - letter - online`,
+    en_pos: `n - v - adv - v - art - n - adv`,
+    vi: `(Yamamoto đang vui vẻ đọc thư trên mạng)`,
+    pinyin: `(Shānběn gāoxìng de zài wǎngshàng dú xìn)`
+  },
+  {
+    cn_raw: `玛丽:山本,有什么好事啦?`,
+    cn_split: `玛丽 - 山本 - 有 - 什么 - 好事 - 啦`,
+    cn_pos: `n - n - v - pron - n - part`,
+    en_raw: `Mary: Yamamoto, is there any good news?`,
+    en_split: `Mary - Yamamoto - is - there - any - good - news`,
+    en_pos: `n - n - v - adv - det - adj - n`,
+    vi: `Mary: Yamamoto, có chuyện gì vui à?`,
+    pinyin: `Mǎlì: Shānběn, yǒu shénme hǎoshì la?`
+  },
+  {
+    cn_raw: `这么高兴。`,
+    cn_split: `这么 - 高兴`,
+    cn_pos: `pron - adj`,
+    en_raw: `So happy.`,
+    en_split: `So - happy`,
+    en_pos: `adv - adj`,
+    vi: `Vui thế này.`,
+    pinyin: `Zhème gāoxìng`
+  },
+  {
+    cn_raw: `山本:我母亲来信了。`,
+    cn_split: `山本 - 我 - 母亲 - 来 - 信 - 了`,
+    cn_pos: `n - pron - n - v - n - part`,
+    en_raw: `Yamamoto: My mother sent a letter.`,
+    en_split: `Yamamoto - My - mother - sent - a - letter`,
+    en_pos: `n - pron - n - v - art - n`,
+    vi: `Yamamoto: Mẹ tôi gửi thư đến rồi.`,
+    pinyin: `Shānběn: Wǒ mǔqīn lái xìn le.`
+  },
+  {
+    cn_raw: `她在信上高兴地说,我姐姐下个月就要结婚了。`,
+    cn_split: `她 - 在 - 信 - 上 - 高兴 - 地 - 说 - 我 - 姐姐 - 下 - 个 - 月 - 就要 - 结婚 - 了`,
+    cn_pos: `pron - prep - n - n - adj - part - v - pron - n - adj - mw - n - adv - v - part`,
+    en_raw: `She said happily in the letter that my elder sister is getting married next month.`,
+    en_split: `She - said - happily - in - the - letter - that - my - elder - sister - is - getting - married - next - month`,
+    en_pos: `pron - v - adv - prep - art - n - conj - pron - adj - n - v - v - adj - adj - n`,
+    vi: `Bà ấy vui vẻ nói trong thư rằng, chị gái tôi tháng sau sắp kết hôn rồi.`,
+    pinyin: `Tā zài xìn shàng gāoxìng de shuō, wǒ jiějiě xià gè yuè jiùyào jiéhūn le.`
+  },
+  {
+    cn_raw: `玛丽:上次你说你姐姐刚找到工作,怎么这么快就要结婚了?`,
+    cn_split: `玛丽 - 上次 - 你 - 说 - 你 - 姐姐 - 刚 - 找到 - 工作 - 怎么 - 这么 - 快 - 就要 - 结婚 - 了`,
+    cn_pos: `n - n - pron - v - pron - n - adv - v - n - pron - pron - adj - adv - v - part`,
+    en_raw: `Mary: Last time you said your sister just found a job, how come she's getting married so soon?`,
+    en_split: `Mary - Last - time - you - said - your - sister - just - found - a - job - how - come - she - is - getting - married - so - soon`,
+    en_pos: `n - adj - n - pron - v - pron - n - adv - v - art - n - adv - v - pron - v - v - adj - adv - adv`,
+    vi: `Mary: Lần trước bạn nói chị gái bạn vừa mới tìm được việc làm, sao mà sắp kết hôn nhanh thế?`,
+    pinyin: `Mǎlì: Shàngcì nǐ shuō nǐ jiějiě gāng zhǎodào gōngzuò, zěnme zhème kuài jiùyào jiéhūn le?`
+  },
+  {
+    cn_raw: `山本:她未婚夫不愿意让她工作了。`,
+    cn_split: `山本 - 她 - 未婚夫 - 不 - 愿意 - 让 - 她 - 工作 - 了`,
+    cn_pos: `n - pron - n - adv - v - v - pron - v - part`,
+    en_raw: `Yamamoto: Her fiancé doesn't want her to work anymore.`,
+    en_split: `Yamamoto - Her - fiancé - does - not - want - her - to - work - anymore`,
+    en_pos: `n - pron - n - v - adv - v - pron - part - v - adv`,
+    vi: `Yamamoto: Vị hôn phu của chị ấy không muốn để chị ấy đi làm nữa.`,
+    pinyin: `Shānběn: Tā wèihūnfū bù yuànyì ràng tā gōngzuò le.`
+  },
+  {
+    cn_raw: `玛丽:这么说,结婚以后她就不工作了?`,
+    cn_split: `玛丽 - 这么 - 说 - 结婚 - 以后 - 她 - 就 - 不 - 工作 - 了`,
+    cn_pos: `n - pron - v - v - n - pron - adv - adv - v - part`,
+    en_raw: `Mary: So, she won't work after getting married?`,
+    en_split: `Mary - So - she - will - not - work - after - getting - married`,
+    en_pos: `n - adv - pron - v - adv - v - prep - v - adj`,
+    vi: `Mary: Nói như vậy, sau khi kết hôn chị ấy sẽ không đi làm nữa sao?`,
+    pinyin: `Mǎlì: Zhème shuō, jiéhūn yǐhòu tā jiù bù gōngzuò le?`
+  },
+  {
+    cn_raw: `山本:对。`,
+    cn_split: `山本 - 对`,
+    cn_pos: `n - adj`,
+    en_raw: `Yamamoto: Right.`,
+    en_split: `Yamamoto - Right`,
+    en_pos: `n - adj`,
+    vi: `Yamamoto: Đúng vậy.`,
+    pinyin: `Shānběn: Duì.`
+  },
+  {
+    cn_raw: `玛丽:将来你也会这样吗?`,
+    cn_split: `玛丽 - 将来 - 你 - 也 - 会 - 这样 - 吗`,
+    cn_pos: `n - n - pron - adv - v - pron - part`,
+    en_raw: `Mary: Will you be like this in the future too?`,
+    en_split: `Mary - Will - you - be - like - this - in - the - future - too`,
+    en_pos: `n - v - pron - v - prep - pron - prep - art - n - adv`,
+    vi: `Mary: Tương lai bạn cũng sẽ như thế này sao?`,
+    pinyin: `Mǎlì: Jiānglái nǐ yě huì zhèyàng ma?`
+  },
+  {
+    cn_raw: `结了婚就不工作了吗?`,
+    cn_split: `结 - 了 - 婚 - 就 - 不 - 工作 - 了 - 吗`,
+    cn_pos: `v - part - n - adv - adv - v - part - part`,
+    en_raw: `Won't you work after getting married?`,
+    en_split: `Will - you - not - work - after - getting - married`,
+    en_pos: `v - pron - adv - v - prep - v - adj`,
+    vi: `Kết hôn xong là không đi làm nữa à?`,
+    pinyin: `Jiéle hūn jiù bù gōngzuò le ma?`
+  },
+  {
+    cn_raw: `山本:不。`,
+    cn_split: `山本 - 不`,
+    cn_pos: `n - adv`,
+    en_raw: `Yamamoto: No.`,
+    en_split: `Yamamoto - No`,
+    en_pos: `n - adv`,
+    vi: `Yamamoto: Không.`,
+    pinyin: `Shānběn: Bù.`
+  },
+  {
+    cn_raw: `山本:我喜欢工作。`,
+    cn_split: `山本 - 我 - 喜欢 - 工作`,
+    cn_pos: `n - pron - v - v`,
+    en_raw: `Yamamoto: I like working.`,
+    en_split: `Yamamoto - I - like - working`,
+    en_pos: `n - pron - v - v`,
+    vi: `Yamamoto: Tôi thích làm việc.`,
+    pinyin: `Shānběn: Wǒ xǐhuān gōngzuò.`
+  },
+  {
+    cn_raw: `要是不让我工作,我就不结婚。`,
+    cn_split: `要是 - 不 - 让 - 我 - 工作 - 我 - 就 - 不 - 结婚`,
+    cn_pos: `conj - adv - v - pron - v - pron - adv - adv - v`,
+    en_raw: `If I'm not allowed to work, I won't get married.`,
+    en_split: `If - I - am - not - allowed - to - work - I - will - not - get - married`,
+    en_pos: `conj - pron - v - adv - v - part - v - pron - v - adv - v - adj`,
+    vi: `Nếu như không để tôi làm việc, tôi sẽ không kết hôn.`,
+    pinyin: `Yàoshi bù ràng wǒ gōngzuò, wǒ jiù bù jiéhūn.`
+  }
+];
+// Cập nhật hàm render để truyền dữ liệu an toàn hơn
+function renderBook() {
+    const container = document.getElementById('bookContent');
+    sentences.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'sentence-item';
+        item.innerHTML = `
+            <div class="text-content">
+                <div class="row-cn">
+                    <span id="cn-txt-${i}">${s.cn_raw}</span>
+                </div>
+                <div id="cn-pos-${i}" class="pos-tag hidden">${s.cn_pos}</div>
+                <div id="pinyin-${i}" class="pinyin-row hidden">${s.pinyin || ''}</div>
+                <div class="row-en">
+                    <span id="en-txt-${i}">${s.en_raw}</span>
+                </div>
+                <div id="en-pos-${i}" class="pos-tag hidden">${s.en_pos}</div>
+                <div class="row-vi">${s.vi}</div>
+            </div>
+            <div class="control-sidebar">
+                <button class="btn-icon" onclick="playSpeech(${i}, 'cn')">♘</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'cn')">♔</button>
+                <button class="btn-icon" onclick="playSpeech(${i}, 'en')">♖</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'en')">♕</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+// Hàm phát âm mới: Lấy dữ liệu trực tiếp từ mảng thay vì truyền chuỗi qua HTML
+// Hàm phát âm: Tự động duy trì ngôn ngữ đang chọn
+function playSpeech(index, langType) {
+    // 1. Dừng mọi âm thanh đang phát để tránh chồng chéo
+    window.speechSynthesis.cancel(); 
+
+    let textToRead = "";
+    let langCode = "";
+
+    // 2. Xác định nội dung và mã ngôn ngữ dựa trên lựa chọn của người dùng
+    if (langType === 'cn') {
+        textToRead = sentences[index].cn_raw;
+        langCode = 'zh-CN';
+    } else {
+        textToRead = sentences[index].en_raw;
+        langCode = 'en-US';
+    }
+
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = textToRead;
+    msg.lang = langCode;
+    msg.rate = document.getElementById('rate').value;
+    
+    // 3. Hiệu ứng Highlight: Tô màu câu đang đọc để dễ theo dõi
+    const allItems = document.getElementsByClassName('sentence-item');
+    // Xóa màu của tất cả các câu khác
+    Array.from(allItems).forEach(item => item.style.backgroundColor = "transparent");
+    // Tô màu vàng nhạt cho câu hiện tại
+    allItems[index].style.backgroundColor = "rgba(230, 126, 34, 0.1)";
+
+    // 4. Xử lý khi kết thúc câu
+    msg.onend = () => {
+        const isAuto = document.getElementById('autoNext').checked;
+        if (isAuto && index < sentences.length - 1) {
+            setTimeout(() => {
+                // QUAN TRỌNG: Truyền đúng langType hiện tại vào lần gọi tiếp theo
+                playSpeech(index + 1, langType); 
+                
+                // Tự động cuộn màn hình đến câu tiếp theo
+                allItems[index + 1].scrollIntoView({
+                    behavior: "smooth", 
+                    block: "center"
+                });
+            }, 500); // Nghỉ 0.5 giây giữa các câu để người dùng kịp ngấm
+        }
+    };
+
+    window.speechSynthesis.speak(msg);
+}
+function toggleMode(index, lang) {
+    const txtSpan = document.getElementById(`${lang}-txt-${index}`);
+    const posSpan = document.getElementById(`${lang}-pos-${index}`);
+    const isOriginal = txtSpan.innerText === sentences[index][`${lang}_raw`];
+
+    txtSpan.innerText = isOriginal ? sentences[index][`${lang}_split`] : sentences[index][`${lang}_raw`];
+    posSpan.classList.toggle('hidden');
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+
+function toggleAllPinyin() {
+    // 1. Lấy tất cả các phần tử có class là pinyin-row
+    const pinyinElements = document.getElementsByClassName('pinyin-row');
+    
+    // 2. Kiểm tra nếu không tìm thấy phần tử nào (báo lỗi ra Console để kiểm tra)
+    if (pinyinElements.length === 0) {
+        console.error("Không tìm thấy phần tử nào có class 'pinyin-row'");
+        return;
+    }
+
+    // 3. Duyệt qua từng phần tử và bật/tắt class 'hidden'
+    for (let i = 0; i < pinyinElements.length; i++) {
+        pinyinElements[i].classList.toggle('hidden');
+    }
+}
+
+function speak(text, lang, index) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = document.getElementById('rate').value;
+
+    msg.onend = () => {
+        if (document.getElementById('autoNext').checked && index < sentences.length - 1) {
+            setTimeout(() => {
+                speak(sentences[index + 1].cn_raw, 'zh-CN', index + 1);
+                document.getElementsByClassName('sentence-item')[index+1].scrollIntoView({behavior: "smooth", block: "center"});
+            }, 1200);
+        }
+    };
+    window.speechSynthesis.speak(msg);
+}
+
+renderBook();
+</script>
+</body>
+</html>

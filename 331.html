@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
+    <title>Sách Đa Ngôn Ngữ</title>
+    <style>
+        :root {
+            --bg-body: #dcdcdc;
+            --bg-book: #f4f1ea;
+            --text-main: #1a1a1a;
+            --text-sub: #555;
+            --accent: #e67e22;
+            --border: #d1ccc0;
+        }
+
+        /* Chế độ Dark Mode */
+        .dark-mode {
+            --bg-body: #1a1a1b;
+            --bg-book: #2c2c2e;
+            --text-main: #e1e1e1;
+            --text-sub: #b0b0b0;
+            --accent: #f39c12;
+            --border: #444;
+        }
+
+        body { 
+            margin: 0; padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-book);
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sentence-item {
+            display: flex;
+            padding: 20px 5%; /* Lề trái 5% theo yêu cầu */
+            border-bottom: 1px solid var(--border);
+            word-wrap: break-word; /* Tự động xuống dòng */
+        }
+
+        .text-content {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .row-cn { font-family: "Noto Serif SC","Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 1.8rem; font-weight: normal; margin-bottom: 20px; line-height: 1.4; }
+        .row-en { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); opacity: 0.9; }
+        .row-vi { font-size: 1rem; color: var(--text-sub); font-style: italic; }
+        
+        .pos-tag { font-size: 0.85rem; color: var(--accent); display: block; margin-bottom: 20px; margin-top: 0px; font-weight: normal; }
+
+        /* Phím chức năng dạng cột icon */
+        .control-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .btn-icon:hover { background: #eee; transform: scale(1.1); }
+
+        /* Menu nổi cố định ở góc dưới bên phải */
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .settings-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none; /* Ẩn mặc định */
+            color: #333;
+            font-size: 14px;
+        }
+
+        .show-settings .settings-box { display: block; }
+
+        .btn-main-float {
+            width: 50px;
+            height: 50px;
+            background: #34495e;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+
+	/* Thêm vào trong thẻ <style> */
+	.pinyin-row {
+    		font-size: 16px;
+		font-weight: normal;
+   		color: #27ae60; /* Màu xanh lá dịu mắt */
+    		display: block;
+    		margin-top: 0px;
+		margin-bottom: 20px;
+	}
+
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="book-container" id="bookContent">
+    </div>
+
+<div class="floating-menu" id="floatMenu">
+    <div class="settings-box">
+        <strong>⚙️ Cài đặt</strong><hr>
+        Tốc độ: <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9" style="width: 100px;"><br>
+        <label><input type="checkbox" id="autoNext"> Tự động chuyển</label><br>
+	<button onclick="toggleAllPinyin()" style="width: 100%; margin-top: 10px;">🔤 Ẩn/Hiện Pinyin</button>
+        <button onclick="toggleDarkMode()" style="width: 100%; margin-top: 10px;">🌙 Dark Mode</button>
+    </div>
+    <button class="btn-main-float" onclick="document.getElementById('floatMenu').classList.toggle('show-settings')">🛠️</button>
+</div>
+
+<script>
+const sentences = [
+  {
+    cn_raw: `(一)快走吧,要上课了`,
+    cn_split: `(一) - 快 - 走 - 吧 - 要 - 上课 - 了`,
+    cn_pos: `Num - Adv - V - Part - Adv - V - Part`,
+    en_raw: `(1) Hurry up, class is about to start`,
+    en_split: `(1) - Hurry - up - class - is - about - to - start`,
+    en_pos: `Num - V - Adv - N - V - Prep - Part - V`,
+    vi: `(Một) Mau đi thôi, sắp vào lớp rồi`,
+    pinyin: `(Yī) Kuài zǒu ba, yào shàngkè le`
+  },
+  {
+    cn_raw: `(去教室的路上)`,
+    cn_split: `去 - 教室 - 的 - 路上`,
+    cn_pos: `V - N - Part - N`,
+    en_raw: `(On the way to the classroom)`,
+    en_split: `On - the - way - to - the - classroom`,
+    en_pos: `Prep - Art - N - Prep - Art - N`,
+    vi: `(Trên đường đến phòng học)`,
+    pinyin: `(Qù jiàoshì de lùshàng)`
+  },
+  {
+    cn_raw: `田芳:啊,刮风了。`,
+    cn_split: `田芳 - 啊 - 刮风 - 了`,
+    cn_pos: `N - Part - V - Part`,
+    en_raw: `Tian Fang: Ah, it's windy now.`,
+    en_split: `Tian - Fang - Ah - it - is - windy - now`,
+    en_pos: `N - N - Part - Pr - V - Adj - Adv`,
+    vi: `Điền Phương: A, gió nổi lên rồi.`,
+    pinyin: `Tián Fāng: À, guāfēng le.`
+  },
+  {
+    cn_raw: `今天天气真冷。`,
+    cn_split: `今天 - 天气 - 真 - 冷`,
+    cn_pos: `N - N - Adv - Adj`,
+    en_raw: `The weather is really cold today.`,
+    en_split: `The - weather - is - really - cold - today`,
+    en_pos: `Art - N - V - Adv - Adj - N`,
+    vi: `Thời tiết hôm nay thật lạnh.`,
+    pinyin: `Jīntiān tiānqì zhēn lěng.`
+  },
+  {
+    cn_raw: `张东:冬天快要到了。`,
+    cn_split: `张东 - 冬天 - 快要 - 到 - 了`,
+    cn_pos: `N - N - Adv - V - Part`,
+    en_raw: `Zhang Dong: Winter is about to arrive.`,
+    en_split: `Zhang - Dong - Winter - is - about - to - arrive`,
+    en_pos: `N - N - N - V - Prep - Part - V`,
+    vi: `Trương Đông: Mùa đông sắp đến rồi.`,
+    pinyin: `Zhāng Dōng: Dōngtiān kuàyào dào le.`
+  },
+  {
+    cn_raw: `田芳:我不喜欢冬天。`,
+    cn_split: `田芳 - 我 - 不 - 喜欢 - 冬天`,
+    cn_pos: `N - Pr - Adv - V - N`,
+    en_raw: `Tian Fang: I don't like winter.`,
+    en_split: `Tian - Fang - I - do - not - like - winter`,
+    en_pos: `N - N - Pr - V - Adv - V - N`,
+    vi: `Điền Phương: Tôi không thích mùa đông.`,
+    pinyin: `Tián Fāng: Wǒ bù xǐhuān dōngtiān.`
+  },
+  {
+    cn_raw: `张东:我喜欢冬天。`,
+    cn_split: `张东 - 我 - 喜欢 - 冬天`,
+    cn_pos: `N - Pr - V - N`,
+    en_raw: `Zhang Dong: I like winter.`,
+    en_split: `Zhang - Dong - I - like - winter`,
+    en_pos: `N - N - Pr - V - N`,
+    vi: `Trương Đông: Tôi thích mùa đông.`,
+    pinyin: `Zhāng Dōng: Wǒ xǐhuān dōngtiān.`
+  },
+  {
+    cn_raw: `我爱滑冰,也爱滑雪。`,
+    cn_split: `我 - 爱 - 滑冰 - 也 - 爱 - 滑雪`,
+    cn_pos: `Pr - V - V - Adv - V - V`,
+    en_raw: `I love ice skating, and I also love skiing.`,
+    en_split: `I - love - ice - skating - and - I - also - love - skiing`,
+    en_pos: `Pr - V - N - V - Conj - Pr - Adv - V - V`,
+    vi: `Tôi yêu trượt băng, cũng yêu trượt tuyết.`,
+    pinyin: `Wǒ ài huábīng, yě ài huáxuě.`
+  },
+  {
+    cn_raw: `我们家乡有山有水,是有名的风景区。`,
+    cn_split: `我们 - 家乡 - 有 - 山 - 有 - 水 - 是 - 有名 - 的 - 风景区`,
+    cn_pos: `Pr - N - V - N - V - N - V - Adj - Part - N`,
+    en_raw: `My hometown has mountains and water, it is a famous scenic area.`,
+    en_split: `My - hometown - has - mountains - and - water - it - is - a - famous - scenic - area`,
+    en_pos: `Pr - N - V - N - Conj - N - Pr - V - Art - Adj - Adj - N`,
+    vi: `Quê hương chúng tôi có núi có nước, là khu phong cảnh nổi tiếng.`,
+    pinyin: `Wǒmen jiāxiāng yǒu shān yǒu shuǐ, shì yǒumíng de fēngjǐngqū.`
+  },
+  {
+    cn_raw: `夏天可以游泳,冬天可以滑雪,一年四季都有去旅游的人,`,
+    cn_split: `夏天 - 可以 - 游泳 - 冬天 - 可以 - 滑雪 - 一 - 年 - 四 - 季 - 都 - 有 - 去 - 旅游 - 的 - 人`,
+    cn_pos: `N - V - V - N - V - V - Num - N - Num - N - Adv - V - V - V - Part - N`,
+    en_raw: `You can swim in summer, ski in winter, there are people traveling all year round,`,
+    en_split: `You - can - swim - in - summer - ski - in - winter - there - are - people - traveling - all - year - round`,
+    en_pos: `Pr - V - V - Prep - N - V - Prep - N - Adv - V - N - V - Det - N - Adv`,
+    vi: `Mùa hè có thể bơi lội, mùa đông có thể trượt tuyết, bốn mùa trong năm đều có người đi du lịch,`,
+    pinyin: `Xiàtiān kěyǐ yóuyǒng, dōngtiān kěyǐ huáxuě, yī nián sìjì dōu yǒu qù lǚyóu de rén,`
+  },
+  {
+    cn_raw: `尤其是夏天,山里很凉快,去避暑的人特别多。`,
+    cn_split: `尤其 - 是 - 夏天 - 山 - 里 - 很 - 凉快 - 去 - 避暑 - 的 - 人 - 特别 - 多`,
+    cn_pos: `Adv - V - N - N - N - Adv - Adj - V - V - Part - N - Adv - Adj`,
+    en_raw: `Especially in summer, it's cool in the mountains, and there are many people going to avoid the heat.`,
+    en_split: `Especially - in - summer - it - is - cool - in - the - mountains - and - there - are - many - people - going - to - avoid - the - heat`,
+    en_pos: `Adv - Prep - N - Pr - V - Adj - Prep - Art - N - Conj - Adv - V - Adj - N - V - Part - V - Art - N`,
+    vi: `Đặc biệt là mùa hè, trong núi rất mát mẻ, người đi tránh nóng đặc biệt đông.`,
+    pinyin: `Yóuqí shì xiàtiān, shānlǐ hěn liángkuai, qù bìshǔ de rén tèbié duō.`
+  },
+  {
+    cn_raw: `很多人家都靠经营旅馆、饭店发了财。`,
+    cn_split: `很多 - 人家 - 都 - 靠 - 经营 - 旅馆 - 饭店 - 发财 - 了`,
+    cn_pos: `Adj - N - Adv - Prep - V - N - N - V - Part`,
+    en_raw: `Many families have made a fortune by running hotels and restaurants.`,
+    en_split: `Many - families - have - made - a - fortune - by - running - hotels - and - restaurants`,
+    en_pos: `Adj - N - V - V - Art - N - Prep - V - N - Conj - N`,
+    vi: `Rất nhiều hộ gia đình đều dựa vào kinh doanh khách sạn, nhà hàng mà phát tài.`,
+    pinyin: `Hěnduō rénjiā dōu kào jīngyíng lǚguǎn, fàndiàn fāle cái.`
+  },
+  {
+    cn_raw: `田芳:我只会滑冰,不会滑雪。`,
+    cn_split: `田芳 - 我 - 只 - 会 - 滑冰 - 不 - 会 - 滑雪`,
+    cn_pos: `N - Pr - Adv - V - V - Adv - V - V`,
+    en_raw: `Tian Fang: I can only ice skate, I can't ski.`,
+    en_split: `Tian - Fang - I - can - only - ice - skate - I - cannot - ski`,
+    en_pos: `N - N - Pr - V - Adv - N - V - Pr - V - V`,
+    vi: `Điền Phương: Tôi chỉ biết trượt băng, không biết trượt tuyết.`,
+    pinyin: `Tián Fāng: Wǒ zhǐ huì huábīng, bù huì huáxuě.`
+  },
+  {
+    cn_raw: `我真想到你们家乡去学学滑雪。`,
+    cn_split: `我 - 真 - 想 - 到 - 你们 - 家乡 - 去 - 学学 - 滑雪`,
+    cn_pos: `Pr - Adv - V - Prep - Pr - N - V - V - V`,
+    en_raw: `I really want to go to your hometown to learn to ski.`,
+    en_split: `I - really - want - to - go - to - your - hometown - to - learn - to - ski`,
+    en_pos: `Pr - Adv - V - Part - V - Prep - Pr - N - Part - V - Part - V`,
+    vi: `Tôi thật sự muốn đến quê bạn học trượt tuyết một chút.`,
+    pinyin: `Wǒ zhēn xiǎng dào nǐmen jiāxiāng qù xuéxue huáxuě.`
+  },
+  {
+    cn_raw: `你看,树叶都红了。`,
+    cn_split: `你 - 看 - 树叶 - 都 - 红 - 了`,
+    cn_pos: `Pr - V - N - Adv - Adj - Part`,
+    en_raw: `Look, the leaves have all turned red.`,
+    en_split: `Look - the - leaves - have - all - turned - red`,
+    en_pos: `V - Art - N - V - Adv - V - Adj`,
+    vi: `Bạn nhìn kìa, lá cây đều đỏ cả rồi.`,
+    pinyin: `Nǐ kàn, shùyè dōu hóng le.`
+  },
+  {
+    cn_raw: `红叶多漂亮。`,
+    cn_split: `红叶 - 多 - 漂亮`,
+    cn_pos: `N - Adv - Adj`,
+    en_raw: `How beautiful the red leaves are.`,
+    en_split: `How - beautiful - the - red - leaves - are`,
+    en_pos: `Adv - Adj - Art - Adj - N - V`,
+    vi: `Lá đỏ đẹp biết bao.`,
+    pinyin: `Hóngyè duō piàoliang.`
+  },
+  {
+    cn_raw: `等一下,我去捡几片红叶。`,
+    cn_split: `等 - 一下 - 我 - 去 - 捡 - 几 - 片 - 红叶`,
+    cn_pos: `V - Num - Pr - V - V - Num - M - N`,
+    en_raw: `Wait a second, I'm going to pick up a few red leaves.`,
+    en_split: `Wait - a - second - I - am - going - to - pick - up - a - few - red - leaves`,
+    en_pos: `V - Art - N - Pr - V - V - Part - V - Adv - Art - Adj - Adj - N`,
+    vi: `Đợi một chút, tôi đi nhặt mấy lá đỏ.`,
+    pinyin: `Děng yīxià, wǒ qù jiǎn jǐ piàn hóngyè.`
+  },
+  {
+    cn_raw: `张东:别捡了,快走吧,要上课了。`,
+    cn_split: `张东 - 别 - 捡 - 了 - 快 - 走 - 吧 - 要 - 上课 - 了`,
+    cn_pos: `N - Adv - V - Part - Adv - V - Part - Adv - V - Part`,
+    en_raw: `Zhang Dong: Stop picking them, hurry up, class is about to start.`,
+    en_split: `Zhang - Dong - Stop - picking - them - hurry - up - class - is - about - to - start`,
+    en_pos: `N - N - V - V - Pr - V - Adv - N - V - Prep - Part - V`,
+    vi: `Trương Đông: Đừng nhặt nữa, mau đi thôi, sắp vào lớp rồi.`,
+    pinyin: `Zhāng Dōng: Bié jiǎn le, kuài zǒu ba, yào shàngkè le.`
+  },
+  {
+    cn_raw: `田芳:着什么急,还早着呢。`,
+    cn_split: `田芳 - 着 - 什么 - 急 - 还 - 早 - 着 - 呢`,
+    cn_pos: `N - V - Pr - Adj - Adv - Adj - Part - Part`,
+    en_raw: `Tian Fang: Why the rush? It's still early.`,
+    en_split: `Tian - Fang - Why - the - rush - It - is - still - early`,
+    en_pos: `N - N - Adv - Art - N - Pr - V - Adv - Adj`,
+    vi: `Điền Phương: Gấp cái gì, vẫn còn sớm mà.`,
+    pinyin: `Tián Fāng: Zháo shénme jí, hái zǎozhe ne.`
+  },
+  {
+    cn_raw: `张东:你看看表,几点了?`,
+    cn_split: `张东 - 你 - 看看 - 表 - 几 - 点 - 了`,
+    cn_pos: `N - Pr - V - N - Num - N - Part`,
+    en_raw: `Zhang Dong: Look at your watch, what time is it?`,
+    en_split: `Zhang - Dong - Look - at - your - watch - what - time - is - it`,
+    en_pos: `N - N - V - Prep - Pr - N - Adj - N - V - Pr`,
+    vi: `Trương Đông: Bạn nhìn đồng hồ xem, mấy giờ rồi?`,
+    pinyin: `Zhāng Dōng: Nǐ kànkan biǎo, jǐ diǎn le?`
+  },
+  {
+    cn_raw: `田芳:刚七点半。`,
+    cn_split: `田芳 - 刚 - 七 - 点 - 半`,
+    cn_pos: `N - Adv - Num - N - Num`,
+    en_raw: `Tian Fang: Just 7:30.`,
+    en_split: `Tian - Fang - Just - seven - thirty`,
+    en_pos: `N - N - Adv - Num - Num`,
+    vi: `Điền Phương: Mới 7 giờ rưỡi.`,
+    pinyin: `Tián Fāng: Gāng qī diǎn bàn.`
+  },
+  {
+    cn_raw: `张东:什么?你的表是不是坏了?`,
+    cn_split: `张东 - 什么 - 你 - 的 - 表 - 是不是 - 坏 - 了`,
+    cn_pos: `N - Pr - Pr - Part - N - V - Adj - Part`,
+    en_raw: `Zhang Dong: What? Is your watch broken?`,
+    en_split: `Zhang - Dong - What - Is - your - watch - broken`,
+    en_pos: `N - N - Pr - V - Pr - N - Adj`,
+    vi: `Trương Đông: Cái gì? Đồng hồ của bạn có phải hỏng rồi không?`,
+    pinyin: `Zhāng Dōng: Shénme? Nǐ de biǎo shìbushì huài le?`
+  },
+  {
+    cn_raw: `田芳:哎呀,我的表停了,可能没电了,该换电池了。`,
+    cn_split: `田芳 - 哎呀 - 我 - 的 - 表 - 停 - 了 - 可能 - 没 - 电 - 了 - 该 - 换 - 电池 - 了`,
+    cn_pos: `N - Part - Pr - Part - N - V - Part - Adv - V - N - Part - Adv - V - N - Part`,
+    en_raw: `Tian Fang: Oh no, my watch has stopped, maybe it's out of battery, it's time to change the battery.`,
+    en_split: `Tian - Fang - Oh - no - my - watch - has - stopped - maybe - it - is - out - of - battery - it - is - time - to - change - the - battery`,
+    en_pos: `N - N - Part - Adv - Pr - N - V - V - Adv - Pr - V - Prep - Prep - N - Pr - V - N - Part - V - Art - N`,
+    vi: `Điền Phương: Ái chà, đồng hồ của tôi dừng rồi, có lẽ hết điện rồi, đến lúc thay pin rồi.`,
+    pinyin: `Tián Fāng: Āiyā, wǒ de biǎo tíng le, kěnéng méi diàn le, gāi huàn diànchí le.`
+  },
+  {
+    cn_raw: `什么时间了?`,
+    cn_split: `什么 - 时间 - 了`,
+    cn_pos: `Pr - N - Part`,
+    en_raw: `What time is it?`,
+    en_split: `What - time - is - it`,
+    en_pos: `Adj - N - V - Pr`,
+    vi: `Mấy giờ rồi?`,
+    pinyin: `Shénme shíjiān le?`
+  },
+  {
+    cn_raw: `张东:都七点五十了。`,
+    cn_split: `张东 - 都 - 七 - 点 - 五十 - 了`,
+    cn_pos: `N - Adv - Num - N - Num - Part`,
+    en_raw: `Zhang Dong: It's already 7:50.`,
+    en_split: `Zhang - Dong - It - is - already - seven - fifty`,
+    en_pos: `N - N - Pr - V - Adv - Num - Num`,
+    vi: `Trương Đông: Đã 7 giờ 50 rồi.`,
+    pinyin: `Zhāng Dōng: Dōu qī diǎn wǔshí le.`
+  },
+  {
+    cn_raw: `快走吧,再不快点儿就迟到了。`,
+    cn_split: `快 - 走 - 吧 - 再 - 不 - 快 - 点儿 - 就 - 迟到 - 了`,
+    cn_pos: `Adv - V - Part - Adv - Adv - Adj - M - Adv - V - Part`,
+    en_raw: `Hurry up, if we don't move faster, we'll be late.`,
+    en_split: `Hurry - up - if - we - do - not - move - faster - we - will - be - late`,
+    en_pos: `V - Adv - Conj - Pr - V - Adv - V - Adj - Pr - V - V - Adj`,
+    vi: `Mau đi thôi, không nhanh chút nữa là muộn mất.`,
+    pinyin: `Kuài zǒu ba, zài bù kuài diǎnr jiù chídào le.`
+  }
+];
+// Cập nhật hàm render để truyền dữ liệu an toàn hơn
+function renderBook() {
+    const container = document.getElementById('bookContent');
+    sentences.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'sentence-item';
+        item.innerHTML = `
+            <div class="text-content">
+                <div class="row-cn">
+                    <span id="cn-txt-${i}">${s.cn_raw}</span>
+                </div>
+                <div id="cn-pos-${i}" class="pos-tag hidden">${s.cn_pos}</div>
+                <div id="pinyin-${i}" class="pinyin-row hidden">${s.pinyin || ''}</div>
+                <div class="row-en">
+                    <span id="en-txt-${i}">${s.en_raw}</span>
+                </div>
+                <div id="en-pos-${i}" class="pos-tag hidden">${s.en_pos}</div>
+                <div class="row-vi">${s.vi}</div>
+            </div>
+            <div class="control-sidebar">
+                <button class="btn-icon" onclick="playSpeech(${i}, 'cn')">♘</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'cn')">♔</button>
+                <button class="btn-icon" onclick="playSpeech(${i}, 'en')">♖</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'en')">♕</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+// Hàm phát âm mới: Lấy dữ liệu trực tiếp từ mảng thay vì truyền chuỗi qua HTML
+// Hàm phát âm: Tự động duy trì ngôn ngữ đang chọn
+function playSpeech(index, langType) {
+    // 1. Dừng mọi âm thanh đang phát để tránh chồng chéo
+    window.speechSynthesis.cancel(); 
+
+    let textToRead = "";
+    let langCode = "";
+
+    // 2. Xác định nội dung và mã ngôn ngữ dựa trên lựa chọn của người dùng
+    if (langType === 'cn') {
+        textToRead = sentences[index].cn_raw;
+        langCode = 'zh-CN';
+    } else {
+        textToRead = sentences[index].en_raw;
+        langCode = 'en-US';
+    }
+
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = textToRead;
+    msg.lang = langCode;
+    msg.rate = document.getElementById('rate').value;
+    
+    // 3. Hiệu ứng Highlight: Tô màu câu đang đọc để dễ theo dõi
+    const allItems = document.getElementsByClassName('sentence-item');
+    // Xóa màu của tất cả các câu khác
+    Array.from(allItems).forEach(item => item.style.backgroundColor = "transparent");
+    // Tô màu vàng nhạt cho câu hiện tại
+    allItems[index].style.backgroundColor = "rgba(230, 126, 34, 0.1)";
+
+    // 4. Xử lý khi kết thúc câu
+    msg.onend = () => {
+        const isAuto = document.getElementById('autoNext').checked;
+        if (isAuto && index < sentences.length - 1) {
+            setTimeout(() => {
+                // QUAN TRỌNG: Truyền đúng langType hiện tại vào lần gọi tiếp theo
+                playSpeech(index + 1, langType); 
+                
+                // Tự động cuộn màn hình đến câu tiếp theo
+                allItems[index + 1].scrollIntoView({
+                    behavior: "smooth", 
+                    block: "center"
+                });
+            }, 500); // Nghỉ 0.5 giây giữa các câu để người dùng kịp ngấm
+        }
+    };
+
+    window.speechSynthesis.speak(msg);
+}
+function toggleMode(index, lang) {
+    const txtSpan = document.getElementById(`${lang}-txt-${index}`);
+    const posSpan = document.getElementById(`${lang}-pos-${index}`);
+    const isOriginal = txtSpan.innerText === sentences[index][`${lang}_raw`];
+
+    txtSpan.innerText = isOriginal ? sentences[index][`${lang}_split`] : sentences[index][`${lang}_raw`];
+    posSpan.classList.toggle('hidden');
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+
+function toggleAllPinyin() {
+    // 1. Lấy tất cả các phần tử có class là pinyin-row
+    const pinyinElements = document.getElementsByClassName('pinyin-row');
+    
+    // 2. Kiểm tra nếu không tìm thấy phần tử nào (báo lỗi ra Console để kiểm tra)
+    if (pinyinElements.length === 0) {
+        console.error("Không tìm thấy phần tử nào có class 'pinyin-row'");
+        return;
+    }
+
+    // 3. Duyệt qua từng phần tử và bật/tắt class 'hidden'
+    for (let i = 0; i < pinyinElements.length; i++) {
+        pinyinElements[i].classList.toggle('hidden');
+    }
+}
+
+function speak(text, lang, index) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = document.getElementById('rate').value;
+
+    msg.onend = () => {
+        if (document.getElementById('autoNext').checked && index < sentences.length - 1) {
+            setTimeout(() => {
+                speak(sentences[index + 1].cn_raw, 'zh-CN', index + 1);
+                document.getElementsByClassName('sentence-item')[index+1].scrollIntoView({behavior: "smooth", block: "center"});
+            }, 1200);
+        }
+    };
+    window.speechSynthesis.speak(msg);
+}
+
+renderBook();
+</script>
+</body>
+</html>

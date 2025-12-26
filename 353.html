@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
+    <title>Sách Đa Ngôn Ngữ</title>
+    <style>
+        :root {
+            --bg-body: #dcdcdc;
+            --bg-book: #f4f1ea;
+            --text-main: #1a1a1a;
+            --text-sub: #555;
+            --accent: #e67e22;
+            --border: #d1ccc0;
+        }
+
+        /* Chế độ Dark Mode */
+        .dark-mode {
+            --bg-body: #1a1a1b;
+            --bg-book: #2c2c2e;
+            --text-main: #e1e1e1;
+            --text-sub: #b0b0b0;
+            --accent: #f39c12;
+            --border: #444;
+        }
+
+        body { 
+            margin: 0; padding: 0;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: all 0.3s ease;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .book-container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--bg-book);
+            min-height: 100vh;
+            padding-top: 20px;
+        }
+
+        .sentence-item {
+            display: flex;
+            padding: 20px 5%; /* Lề trái 5% theo yêu cầu */
+            border-bottom: 1px solid var(--border);
+            word-wrap: break-word; /* Tự động xuống dòng */
+        }
+
+        .text-content {
+            flex: 1;
+            padding-right: 15px;
+        }
+
+        .row-cn { font-family: "Noto Serif SC","Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 1.8rem; font-weight: normal; margin-bottom: 20px; line-height: 1.4; }
+        .row-en { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); opacity: 0.9; }
+        .row-vi { font-size: 1rem; color: var(--text-sub); font-style: italic; }
+        
+        .pos-tag { font-size: 0.85rem; color: var(--accent); display: block; margin-bottom: 20px; margin-top: 0px; font-weight: normal; }
+
+        /* Phím chức năng dạng cột icon */
+        .control-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 45px;
+            align-items: center;
+        }
+
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 1px solid var(--border);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: 0.2s;
+        }
+        .btn-icon:hover { background: #eee; transform: scale(1.1); }
+
+        /* Menu nổi cố định ở góc dưới bên phải */
+        .floating-menu {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .settings-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: none; /* Ẩn mặc định */
+            color: #333;
+            font-size: 14px;
+        }
+
+        .show-settings .settings-box { display: block; }
+
+        .btn-main-float {
+            width: 50px;
+            height: 50px;
+            background: #34495e;
+            color: white;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            font-size: 24px;
+        }
+
+	/* Thêm vào trong thẻ <style> */
+	.pinyin-row {
+    		font-size: 16px;
+		font-weight: normal;
+   		color: #27ae60; /* Màu xanh lá dịu mắt */
+    		display: block;
+    		margin-top: 0px;
+		margin-bottom: 20px;
+	}
+
+
+        .hidden { display: none !important; }
+
+    </style>
+</head>
+<body>
+
+<div class="book-container" id="bookContent">
+    </div>
+
+<div class="floating-menu" id="floatMenu">
+    <div class="settings-box">
+        <strong>⚙️ Cài đặt</strong><hr>
+        Tốc độ: <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9" style="width: 100px;"><br>
+        <label><input type="checkbox" id="autoNext"> Tự động chuyển</label><br>
+	<button onclick="toggleAllPinyin()" style="width: 100%; margin-top: 10px;">🔤 Ẩn/Hiện Pinyin</button>
+        <button onclick="toggleDarkMode()" style="width: 100%; margin-top: 10px;">🌙 Dark Mode</button>
+    </div>
+    <button class="btn-main-float" onclick="document.getElementById('floatMenu').classList.toggle('show-settings')">🛠️</button>
+</div>
+
+<script>
+const sentences = [
+  {
+    cn_raw: `我听过钢琴协奏曲《黄河》。`,
+    cn_split: `我 - 听 - 过 - 钢琴 - 协奏曲 - 《 - 黄河 - 》`,
+    cn_pos: `Đại từ - Động từ - Trợ từ - Danh từ - Danh từ - Ký hiệu - Danh từ - Ký hiệu`,
+    en_raw: `I have heard the piano concerto "Yellow River".`,
+    en_split: `I - have heard - the piano concerto - "Yellow River"`,
+    en_pos: `Pronoun - Verb phrase - Noun phrase - Proper noun`,
+    vi: `Tôi đã từng nghe bản hợp xướng piano "Sông Hoàng Hà".`,
+    pinyin: `Wǒ tīngguò gāngqín xiézhòuqǔ "Huánghé".`
+  },
+  {
+    cn_raw: `田芳：爱德华，你说你是个音乐迷，你听过中国音乐吗？`,
+    cn_split: `田芳 - ： - 爱德华 - ， - 你 - 说 - 你 - 是 - 个 - 音乐迷 - ， - 你 - 听 - 过 - 中国 - 音乐 - 吗 - ？`,
+    cn_pos: `Danh từ - Ký hiệu - Danh từ - Ký hiệu - Đại từ - Động từ - Đại từ - Động từ - Lượng từ - Danh từ - Ký hiệu - Đại từ - Động từ - Trợ từ - Danh từ - Danh từ - Trợ từ - Ký hiệu`,
+    en_raw: `Tian Fang: Edward, you said you are a music fan, have you heard Chinese music?`,
+    en_split: `Tian Fang - : - Edward - , - you - said - you - are - a music fan - , - have - you - heard - Chinese music - ?`,
+    en_pos: `Proper noun - Punctuation - Proper noun - Punctuation - Pronoun - Verb - Pronoun - Verb - Noun phrase - Punctuation - Auxiliary - Pronoun - Verb - Noun phrase - Punctuation`,
+    vi: `Điền Phương: Edward, bạn nói bạn là một người hâm mộ âm nhạc, bạn đã từng nghe nhạc Trung Quốc chưa?`,
+    pinyin: `Tián Fāng: Àidéhuá, nǐ shuō nǐ shì gè yīnyuè mí, nǐ tīngguò Zhōngguó yīnyuè ma?`
+  },
+  {
+    cn_raw: `爱德华：当然听过！`,
+    cn_split: `爱德华 - ： - 当然 - 听 - 过 - ！`,
+    cn_pos: `Danh từ - Ký hiệu - Phó từ - Động từ - Trợ từ - Ký hiệu`,
+    en_raw: `Edward: Of course I have!`,
+    en_split: `Edward - : - Of course - I - have - !`,
+    en_pos: `Proper noun - Punctuation - Adverb - Pronoun - Verb - Punctuation`,
+    vi: `Edward: Đương nhiên là nghe rồi!`,
+    pinyin: `Àidéhuá: Dāngrán tīngguò!`
+  },
+  {
+    cn_raw: `田芳：听过什么？`,
+    cn_split: `田芳 - ： - 听 - 过 - 什么 - ？`,
+    cn_pos: `Danh từ - Ký hiệu - Động từ - Trợ từ - Đại từ nghi vấn - Ký hiệu`,
+    en_raw: `Tian Fang: What have you heard?`,
+    en_split: `Tian Fang - : - What - have - you - heard - ?`,
+    en_pos: `Proper noun - Punctuation - Pronoun - Auxiliary - Pronoun - Verb - Punctuation`,
+    vi: `Điền Phương: Đã nghe cái gì rồi?`,
+    pinyin: `Tián Fāng: Tīngguò shénme?`
+  },
+  {
+    cn_raw: `爱德华：在加拿大时，我亲耳听过一位中国钢琴家演奏的《黄河》。`,
+    cn_split: `爱德华 - ： - 在 - 加拿大 - 时 - ， - 我 - 亲耳 - 听 - 过 - 一 - 位 - 中国 - 钢琴家 - 演奏 - 的 - 《 - 黄河 - 》`,
+    cn_pos: `Danh từ - Ký hiệu - Giới từ - Danh từ - Danh từ (thời gian) - Ký hiệu - Đại từ - Phó từ - Động từ - Trợ từ - Số từ - Lượng từ - Danh từ - Danh từ - Động từ - Trợ từ kết cấu - Ký hiệu - Danh từ - Ký hiệu`,
+    en_raw: `Edward: When I was in Canada, I personally heard the "Yellow River" performed by a Chinese pianist.`,
+    en_split: `Edward - : - When - I - was - in Canada - , - I - personally - heard - the "Yellow River" - performed by - a Chinese pianist`,
+    en_pos: `Proper noun - Punctuation - Conjunction - Pronoun - Verb - Prepositional phrase - Punctuation - Pronoun - Adverb - Verb - Noun phrase - Verb phrase - Noun phrase`,
+    vi: `Edward: Khi ở Canada, tôi đã tận tai nghe bản "Sông Hoàng Hà" do một nghệ sĩ piano Trung Quốc biểu diễn.`,
+    pinyin: `Àidéhuá: Zài Jiānádà shí, wǒ qīn'ěr tīngguò yí wèi Zhōngguó gāngqínjiā yǎnzòu de "Huánghé".`
+  },
+  {
+    cn_raw: `田芳：你觉得怎么样？`,
+    cn_split: `田芳 - ： - 你 - 觉得 - 怎么样 - ？`,
+    cn_pos: `Danh từ - Ký hiệu - Đại từ - Động từ - Đại từ nghi vấn - Ký hiệu`,
+    en_raw: `Tian Fang: What do you think?`,
+    en_split: `Tian Fang - : - What - do - you - think - ?`,
+    en_pos: `Proper noun - Punctuation - Pronoun - Auxiliary - Pronoun - Verb - Punctuation`,
+    vi: `Điền Phương: Bạn cảm thấy thế nào?`,
+    pinyin: `Tián Fāng: Nǐ juéde zěnmeyàng?`
+  },
+  {
+    cn_raw: `爱德华：好极了，真想再听一遍。`,
+    cn_split: `爱德华 - ： - 好 - 极 - 了 - ， - 真 - 想 - 再 - 听 - 一 - 遍 - 。`,
+    cn_pos: `Danh từ - Ký hiệu - Tính từ - Trợ từ mức độ - Trợ từ - Ký hiệu - Phó từ - Động từ năng nguyện - Phó từ - Động từ - Số từ - Lượng từ - Ký hiệu`,
+    en_raw: `Edward: Excellent, I really want to hear it again.`,
+    en_split: `Edward - : - Excellent - , - I - really - want - to hear - it - again - .`,
+    en_pos: `Proper noun - Punctuation - Adjective - Punctuation - Pronoun - Adverb - Verb - Infinitive phrase - Pronoun - Adverb - Punctuation`,
+    vi: `Edward: Tuyệt vời lắm, thực sự muốn nghe lại một lần nữa.`,
+    pinyin: `Àidéhuá: Hǎojíle, zhēn xiǎng zài tīng yí biàn.`
+  },
+  {
+    cn_raw: `田芳：听过小提琴协奏曲《梁祝》吗？`,
+    cn_split: `田芳 - ： - 听 - 过 - 小提琴 - 协奏曲 - 《 - 梁祝 - 》 - 吗 - ？`,
+    cn_pos: `Danh từ - Ký hiệu - Động từ - Trợ từ - Danh từ - Danh từ - Ký hiệu - Danh từ - Ký hiệu - Trợ từ - Ký hiệu`,
+    en_raw: `Tian Fang: Have you heard the violin concerto "Butterfly Lovers"?`,
+    en_split: `Tian Fang - : - Have - you - heard - the violin concerto - "Butterfly Lovers" - ?`,
+    en_pos: `Proper noun - Punctuation - Auxiliary - Pronoun - Verb - Noun phrase - Proper noun - Punctuation`,
+    vi: `Điền Phương: Đã nghe bản hợp xướng violin "Lương Chúc" chưa?`,
+    pinyin: `Tián Fāng: Tīngguò xiǎotíqín xiézhòuqǔ "Liáng-Zhù" ma?`
+  },
+  {
+    cn_raw: `爱德华：听说过，但是没听过。`,
+    cn_split: `爱德华 - ： - 听说 - 过 - ， - 但是 - 没 - 听 - 过 - 。`,
+    cn_pos: `Danh từ - Ký hiệu - Động từ - Trợ từ - Ký hiệu - Liên từ - Phó từ phủ định - Động từ - Trợ từ - Ký hiệu`,
+    en_raw: `Edward: I've heard of it, but I haven't heard it.`,
+    en_split: `Edward - : - I - 've heard of - it - , - but - I - haven't - heard - it - .`,
+    en_pos: `Proper noun - Punctuation - Pronoun - Verb phrase - Pronoun - Punctuation - Conjunction - Pronoun - Auxiliary - Verb - Pronoun - Punctuation`,
+    vi: `Edward: Có nghe nói qua rồi, nhưng chưa nghe (trực tiếp).`,
+    pinyin: `Àidéhuá: Tīngshuōguò, dànshì méi tīngguò.`
+  },
+  {
+    cn_raw: `好听吗？`,
+    cn_split: `好听 - 吗 - ？`,
+    cn_pos: `Tính từ - Trợ từ - Ký hiệu`,
+    en_raw: `Is it good to listen to?`,
+    en_split: `Is - it - good to listen to - ?`,
+    en_pos: `Verb - Pronoun - Adjective phrase - Punctuation`,
+    vi: `Có hay không?`,
+    pinyin: `Hǎotīng ma?`
+  },
+  {
+    cn_raw: `田芳：你听了就知道了。`,
+    cn_split: `田芳 - ： - 你 - 听 - 了 - 就 - 知道 - 了 - 。`,
+    cn_pos: `Danh từ - Ký hiệu - Đại từ - Động từ - Trợ từ - Phó từ - Động từ - Trợ từ - Ký hiệu`,
+    en_raw: `Tian Fang: You will know after you listen to it.`,
+    en_split: `Tian Fang - : - You - will know - after - you - listen to - it - .`,
+    en_pos: `Proper noun - Punctuation - Pronoun - Verb phrase - Conjunction - Pronoun - Verb phrase - Pronoun - Punctuation`,
+    vi: `Điền Phương: Bạn nghe rồi sẽ biết thôi.`,
+    pinyin: `Tián Fāng: Nǐ tīngle jiù zhīdàole.`
+  },
+  {
+    cn_raw: `爱德华：我很想听听，你这儿有光盘吗？`,
+    cn_split: `爱德华 - ： - 我 - 很 - 想 - 听听 - ， - 你 - 这儿 - 有 - 光盘 - 吗 - ？`,
+    cn_pos: `Danh từ - Ký hiệu - Đại từ - Phó từ - Động từ năng nguyện - Động từ (lặp lại) - Ký hiệu - Đại từ - Đại từ chỉ nơi chốn - Động từ - Danh từ - Trợ từ - Ký hiệu`,
+    en_raw: `Edward: I really want to listen, do you have the CD here?`,
+    en_split: `Edward - : - I - really - want to listen - , - do - you - have - the CD - here - ?`,
+    en_pos: `Proper noun - Punctuation - Pronoun - Adverb - Verb phrase - Punctuation - Auxiliary - Pronoun - Verb - Noun phrase - Adverb - Punctuation`,
+    vi: `Edward: Tôi rất muốn nghe thử, chỗ bạn có đĩa CD không?`,
+    pinyin: `Àidéhuá: Wǒ hěn xiǎng tīngting, nǐ zhèr yǒu guāngpán ma?`
+  },
+  {
+    cn_raw: `田芳：有。`,
+    cn_split: `田芳 - ： - 有 - 。`,
+    cn_pos: `Danh từ - Ký hiệu - Động từ - Ký hiệu`,
+    en_raw: `Tian Fang: Yes.`,
+    en_split: `Tian Fang - : - Yes - .`,
+    en_pos: `Proper noun - Punctuation - Adverb - Punctuation`,
+    vi: `Điền Phương: Có.`,
+    pinyin: `Tián Fāng: Yǒu.`
+  },
+  {
+    cn_raw: `爱德华：借给我听听吧。`,
+    cn_split: `爱德华 - ： - 借 - 给 - 我 - 听听 - 吧 - 。`,
+    cn_pos: `Danh từ - Ký hiệu - Động từ - Giới từ - Đại từ - Động từ (lặp lại) - Trợ từ ngữ khí - Ký hiệu`,
+    en_raw: `Edward: Please lend it to me to listen.`,
+    en_split: `Edward - : - Please - lend - it - to me - to listen - .`,
+    en_pos: `Proper noun - Punctuation - Adverb - Verb - Pronoun - Prepositional phrase - Infinitive phrase - Punctuation`,
+    vi: `Edward: Cho tôi mượn nghe thử đi.`,
+    pinyin: `Àidéhuá: Jiè gěi wǒ tīngting ba.`
+  },
+  {
+    cn_raw: `田芳：你拿去吧。`,
+    cn_split: `田芳 - ： - 你 - 拿 - 去 - 吧 - 。`,
+    cn_pos: `Danh từ - Ký hiệu - Đại từ - Động từ - Động từ xu hướng - Trợ từ ngữ khí - Ký hiệu`,
+    en_raw: `Tian Fang: You take it.`,
+    en_split: `Tian Fang - : - You - take - it - .`,
+    en_pos: `Proper noun - Punctuation - Pronoun - Verb - Pronoun - Punctuation`,
+    vi: `Điền Phương: Bạn cầm đi đi.`,
+    pinyin: `Tián Fāng: Nǐ ná qù ba.`
+  },
+  {
+    cn_raw: `听完就还给我。`,
+    cn_split: `听 - 完 - 就 - 还 - 给 - 我 - 。`,
+    cn_pos: `Động từ - Bổ ngữ kết quả - Phó từ - Động từ - Giới từ - Đại từ - Ký hiệu`,
+    en_raw: `Return it to me after you finish listening.`,
+    en_split: `Return - it - to me - after - you - finish listening - .`,
+    en_pos: `Verb - Pronoun - Prepositional phrase - Conjunction - Pronoun - Verb phrase - Punctuation`,
+    vi: `Nghe xong thì trả lại cho tôi nhé.`,
+    pinyin: `Tīng wán jiù huán gěi wǒ.`
+  },
+  {
+    cn_raw: `爱德华：一定。`,
+    cn_split: `爱德华 - ： - 一定 - 。`,
+    cn_pos: `Danh từ - Ký hiệu - Phó từ - Ký hiệu`,
+    en_raw: `Edward: Definitely.`,
+    en_split: `Edward - : - Definitely - .`,
+    en_pos: `Proper noun - Punctuation - Adverb - Punctuation`,
+    vi: `Edward: Nhất định rồi.`,
+    pinyin: `Àidéhuá: Yídìng.`
+  },
+  {
+    cn_raw: `好借好还，再借不难嘛。`,
+    cn_split: `好 - 借 - 好 - 还 - ， - 再 - 借 - 不 - 难 - 嘛 - 。`,
+    cn_pos: `Tính từ - Động từ - Tính từ - Động từ - Ký hiệu - Phó từ - Động từ - Phó từ phủ định - Tính từ - Trợ từ ngữ khí - Ký hiệu`,
+    en_raw: `Edward: Borrowing and returning easily makes borrowing again not difficult.`,
+    en_split: `Edward - : - Borrowing - and - returning - easily - makes - borrowing again - not - difficult - .`,
+    en_pos: `Proper noun - Punctuation - Gerund - Conjunction - Gerund - Adverb - Verb - Noun phrase - Adverb - Adjective - Punctuation`,
+    vi: `Có mượn có trả, mượn lại không khó mà.`,
+    pinyin: `Hǎo jiè hǎo huán, zài jiè bù nán ma.`
+  }
+];
+// Cập nhật hàm render để truyền dữ liệu an toàn hơn
+function renderBook() {
+    const container = document.getElementById('bookContent');
+    sentences.forEach((s, i) => {
+        const item = document.createElement('div');
+        item.className = 'sentence-item';
+        item.innerHTML = `
+            <div class="text-content">
+                <div class="row-cn">
+                    <span id="cn-txt-${i}">${s.cn_raw}</span>
+                </div>
+                <div id="cn-pos-${i}" class="pos-tag hidden">${s.cn_pos}</div>
+                <div id="pinyin-${i}" class="pinyin-row hidden">${s.pinyin || ''}</div>
+                <div class="row-en">
+                    <span id="en-txt-${i}">${s.en_raw}</span>
+                </div>
+                <div id="en-pos-${i}" class="pos-tag hidden">${s.en_pos}</div>
+                <div class="row-vi">${s.vi}</div>
+            </div>
+            <div class="control-sidebar">
+                <button class="btn-icon" onclick="playSpeech(${i}, 'cn')">♘</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'cn')">♔</button>
+                <button class="btn-icon" onclick="playSpeech(${i}, 'en')">♖</button>
+                <button class="btn-icon" onclick="toggleMode(${i}, 'en')">♕</button>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+}
+// Hàm phát âm mới: Lấy dữ liệu trực tiếp từ mảng thay vì truyền chuỗi qua HTML
+// Hàm phát âm: Tự động duy trì ngôn ngữ đang chọn
+function playSpeech(index, langType) {
+    // 1. Dừng mọi âm thanh đang phát để tránh chồng chéo
+    window.speechSynthesis.cancel(); 
+
+    let textToRead = "";
+    let langCode = "";
+
+    // 2. Xác định nội dung và mã ngôn ngữ dựa trên lựa chọn của người dùng
+    if (langType === 'cn') {
+        textToRead = sentences[index].cn_raw;
+        langCode = 'zh-CN';
+    } else {
+        textToRead = sentences[index].en_raw;
+        langCode = 'en-US';
+    }
+
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = textToRead;
+    msg.lang = langCode;
+    msg.rate = document.getElementById('rate').value;
+    
+    // 3. Hiệu ứng Highlight: Tô màu câu đang đọc để dễ theo dõi
+    const allItems = document.getElementsByClassName('sentence-item');
+    // Xóa màu của tất cả các câu khác
+    Array.from(allItems).forEach(item => item.style.backgroundColor = "transparent");
+    // Tô màu vàng nhạt cho câu hiện tại
+    allItems[index].style.backgroundColor = "rgba(230, 126, 34, 0.1)";
+
+    // 4. Xử lý khi kết thúc câu
+    msg.onend = () => {
+        const isAuto = document.getElementById('autoNext').checked;
+        if (isAuto && index < sentences.length - 1) {
+            setTimeout(() => {
+                // QUAN TRỌNG: Truyền đúng langType hiện tại vào lần gọi tiếp theo
+                playSpeech(index + 1, langType); 
+                
+                // Tự động cuộn màn hình đến câu tiếp theo
+                allItems[index + 1].scrollIntoView({
+                    behavior: "smooth", 
+                    block: "center"
+                });
+            }, 500); // Nghỉ 0.5 giây giữa các câu để người dùng kịp ngấm
+        }
+    };
+
+    window.speechSynthesis.speak(msg);
+}
+function toggleMode(index, lang) {
+    const txtSpan = document.getElementById(`${lang}-txt-${index}`);
+    const posSpan = document.getElementById(`${lang}-pos-${index}`);
+    const isOriginal = txtSpan.innerText === sentences[index][`${lang}_raw`];
+
+    txtSpan.innerText = isOriginal ? sentences[index][`${lang}_split`] : sentences[index][`${lang}_raw`];
+    posSpan.classList.toggle('hidden');
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark-mode');
+}
+
+function toggleAllPinyin() {
+    // 1. Lấy tất cả các phần tử có class là pinyin-row
+    const pinyinElements = document.getElementsByClassName('pinyin-row');
+    
+    // 2. Kiểm tra nếu không tìm thấy phần tử nào (báo lỗi ra Console để kiểm tra)
+    if (pinyinElements.length === 0) {
+        console.error("Không tìm thấy phần tử nào có class 'pinyin-row'");
+        return;
+    }
+
+    // 3. Duyệt qua từng phần tử và bật/tắt class 'hidden'
+    for (let i = 0; i < pinyinElements.length; i++) {
+        pinyinElements[i].classList.toggle('hidden');
+    }
+}
+
+function speak(text, lang, index) {
+    window.speechSynthesis.cancel();
+    const msg = new SpeechSynthesisUtterance(text);
+    msg.lang = lang;
+    msg.rate = document.getElementById('rate').value;
+
+    msg.onend = () => {
+        if (document.getElementById('autoNext').checked && index < sentences.length - 1) {
+            setTimeout(() => {
+                speak(sentences[index + 1].cn_raw, 'zh-CN', index + 1);
+                document.getElementsByClassName('sentence-item')[index+1].scrollIntoView({behavior: "smooth", block: "center"});
+            }, 1200);
+        }
+    };
+    window.speechSynthesis.speak(msg);
+}
+
+renderBook();
+</script>
+</body>
+</html>
