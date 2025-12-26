@@ -3,494 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@200..900&display=swap" rel="stylesheet">
-    <title>Sách Đa Ngôn Ngữ</title>
-    <style>
-        :root {
-            --bg-body: #dcdcdc;
-            --bg-book: #f4f1ea;
-            --text-main: #1a1a1a;
-            --text-sub: #555;
-            --accent: #e67e22;
-            --border: #d1ccc0;
-        }
-
-        /* Chế độ Dark Mode */
-        .dark-mode {
-            --bg-body: #1a1a1b;
-            --bg-book: #2c2c2e;
-            --text-main: #e1e1e1;
-            --text-sub: #b0b0b0;
-            --accent: #f39c12;
-            --border: #444;
-        }
-
-        body { 
-            margin: 0; padding: 0;
-            background-color: var(--bg-body);
-            color: var(--text-main);
-            transition: all 0.3s ease;
-            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-        }
-
-        .book-container {
-            width: 100%;
-            max-width: 1200px;
-            margin: 0 auto;
-            background: var(--bg-book);
-            min-height: 100vh;
-            padding-top: 20px;
-        }
-
-        .sentence-item {
-            display: flex;
-            padding: 20px 5%; /* Lề trái 5% theo yêu cầu */
-            border-bottom: 1px solid var(--border);
-            word-wrap: break-word; /* Tự động xuống dòng */
-        }
-
-        .text-content {
-            flex: 1;
-            padding-right: 15px;
-        }
-
-        .row-cn { font-family: "Noto Serif SC","Segoe UI", Tahoma, Geneva, Verdana, sans-serif; font-size: 1.8rem; font-weight: normal; margin-bottom: 20px; line-height: 1.4; }
-        .row-en { font-size: 1.2rem; margin-bottom: 20px; color: var(--text-main); opacity: 0.9; }
-        .row-vi { font-size: 1rem; color: var(--text-sub); font-style: italic; }
-        
-        .pos-tag { font-size: 0.85rem; color: var(--accent); display: block; margin-bottom: 20px; margin-top: 0px; font-weight: normal; }
-
-        /* Phím chức năng dạng cột icon */
-        .control-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            width: 45px;
-            align-items: center;
-        }
-
-        .btn-icon {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 1px solid var(--border);
-            background: white;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 18px;
-            transition: 0.2s;
-        }
-        .btn-icon:hover { background: #eee; transform: scale(1.1); }
-
-        /* Menu nổi cố định ở góc dưới bên phải */
-        .floating-menu {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-end;
-            gap: 10px;
-            z-index: 1000;
-        }
-
-        .settings-box {
-            background: white;
-            padding: 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            display: none; /* Ẩn mặc định */
-            color: #333;
-            font-size: 14px;
-        }
-
-        .show-settings .settings-box { display: block; }
-
-        .btn-main-float {
-            width: 50px;
-            height: 50px;
-            background: #34495e;
-            color: white;
-            border-radius: 50%;
-            border: none;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            font-size: 24px;
-        }
-
-	/* Thêm vào trong thẻ <style> */
-	.pinyin-row {
-    		font-size: 16px;
-		font-weight: normal;
-   		color: #27ae60; /* Màu xanh lá dịu mắt */
-    		display: block;
-    		margin-top: 0px;
-		margin-bottom: 20px;
-	}
-
-
-        .hidden { display: none !important; }
-
-    </style>
+    <title>Kinh nghiệm học tiếng Trung | Chia sẻ & Tài liệu</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-<div class="book-container" id="bookContent">
+    <div class="container">
+        <header>
+            <h1>Học Tiếng Trung Bằng Sách Song Ngữ</h1>
+            <p>Chào mừng bạn! Đây là nơi tôi lưu trữ những bài khóa mà tôi đã học trong quá trình học tiếng Trung. Tôi biên tập lại dưới dạng song ngữ để mọi người đọc dễ hơn. Nếu có ý kiến đóng góp các bạn vui lòng email cho mình nhé!</p>
+            
+            <nav class="social-links">
+                <a href="mailto:lochuynh.hvl@gmail.com">Email</a> /
+                <a href="https://github.com/hvloc92">GitHub</a> /
+                <a href="#">LinkedIn</a>
+            </nav>
+        </header>
+
+        <hr>
+
+        <section class="content-section">
+            <h2>Danh sách bài khóa</h2>
+            <ul class="lesson-list">
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="311.html">Bài 1-1: 北京比上海大吧</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="312.html">Bài 1-2: 我比你更喜欢音乐</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="313.html">Bài 1-3: 逛公园</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="321.html">Bài 2-1: 我们那儿的冬天跟北京一样冷</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="322.html">Bài 2-2: 我跟你不一样</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="323.html">Bài 2-3: 赛马</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="331.html">Bài 3-1: 快走吧,要上课了</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="332.html">Bài 3-2: 我姐姐下个月就要结婚了</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="341.html">Bài 4-1: 我给您捎来了一些东西</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="342.html">Bài 4-2: 快上来吧, 要开车了</a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="343.html"> Bài 4-3: 今天我带同学们去参观展览 </a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="351.html"> Bài 5-1: 我吃过中药 </a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="352.html"> Bài 5-2: 你以前来过中国吗 </a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="353.html"> Bài 5-3: 我听过钢琴协奏曲《黄河》 </a>
+                </li>
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="361.html">Bài 6: 我是跟旅游团一起来的</a>
+                </li>
+
+                <li>
+                    <span class="date">2025-12-27</span>
+                    <a href="bai-khoa-3.html">Đang cập nhật</a>
+                </li>
+            </ul>
+        </section>
+
+        <hr>
+
+        <footer>
+            <p>&copy; 2025 Huỳnh Văn Lộc. Được xây dựng dựa trên phong cách tối giản.</p>
+        </footer>
     </div>
 
-<div class="floating-menu" id="floatMenu">
-    <div class="settings-box">
-        <strong>⚙️ Cài đặt</strong><hr>
-        Tốc độ: <input type="range" id="rate" min="0.5" max="1.3" step="0.1" value="0.9" style="width: 100px;"><br>
-        <label><input type="checkbox" id="autoNext"> Tự động chuyển</label><br>
-	<button onclick="toggleAllPinyin()" style="width: 100%; margin-top: 10px;">🔤 Ẩn/Hiện Pinyin</button>
-        <button onclick="toggleDarkMode()" style="width: 100%; margin-top: 10px;">🌙 Dark Mode</button>
-    </div>
-    <button class="btn-main-float" onclick="document.getElementById('floatMenu').classList.toggle('show-settings')">🛠️</button>
-</div>
-
-<script>
-const sentences = [
-  {
-    cn_raw: `你以前来过中国吗.`,
-    cn_split: `你 - 以前 - 来 - 过 - 中国 - 吗`,
-    cn_pos: `Đại từ - Danh từ thời gian - Động từ - Trợ từ động thái - Danh từ - Trợ từ nghi vấn`,
-    en_raw: `Have you been to China before?`,
-    en_split: `Have - you - been - to - China - before?`,
-    en_pos: `Trợ động từ - Đại từ - Động từ - Giới từ - Danh từ - Trạng từ`,
-    vi: `Bạn trước đây đã từng đến Trung Quốc chưa?`,
-    pinyin: `Nǐ yǐqián láiguò Zhōngguó ma.`
-  },
-  {
-    cn_raw: `山本, 听说你曾经来过中国, 是吗?`,
-    cn_split: `山本 - 听说 - 你 - 曾经 - 来 - 过 - 中国 - 是吗`,
-    cn_pos: `Danh từ riêng - Động từ - Đại từ - Phó từ - Động từ - Trợ từ động thái - Danh từ - Cụm từ nghi vấn`,
-    en_raw: `Yamamoto, I heard that you have been to China before, is that right?`,
-    en_split: `Yamamoto - I - heard - that - you - have - been - to - China - before - is - that - right?`,
-    en_pos: `Danh từ riêng - Đại từ - Động từ - Liên từ - Đại từ - Trợ động từ - Động từ - Giới từ - Danh từ - Trạng từ - Động từ to-be - Đại từ - Tính từ`,
-    vi: `Sơn Bản, nghe nói bạn đã từng đến Trung Quốc, đúng không?`,
-    pinyin: `Shānběn, tīngshuō nǐ céngjīng láiguò Zhōngguó, shì ma?`
-  },
-  {
-    cn_raw: `是啊, 来过一次。`,
-    cn_split: `是 - 啊 - 来 - 过 - 一次`,
-    cn_pos: `Động từ - Trợ từ ngữ khí - Động từ - Trợ từ động thái - Số lượng từ`,
-    en_raw: `Yes, I have been there once.`,
-    en_split: `Yes - I - have - been - there - once`,
-    en_pos: `Thán từ - Đại từ - Trợ động từ - Động từ - Trạng từ - Trạng từ`,
-    vi: `Đúng vậy, đã từng đến một lần.`,
-    pinyin: `Shì a, láiguò yícì.`
-  },
-  {
-    cn_raw: `你呢?`,
-    cn_split: `你 - 呢`,
-    cn_pos: `Đại từ - Trợ từ nghi vấn`,
-    en_raw: `How about you?`,
-    en_split: `How - about - you?`,
-    en_pos: `Trạng từ - Giới từ - Đại từ`,
-    vi: `Còn bạn thì sao?`,
-    pinyin: `Nǐ ne?`
-  },
-  {
-    cn_raw: `我没有来过, 这是第一次。`,
-    cn_split: `我 - 没有 - 来 - 过 - 这 - 是 - 第一 - 次`,
-    cn_pos: `Đại từ - Phó từ phủ định - Động từ - Trợ từ động thái - Đại từ chỉ định - Động từ - Số từ - Lượng từ`,
-    en_raw: `I haven't been there, this is the first time.`,
-    en_split: `I - have - not - been - there - this - is - the - first - time`,
-    en_pos: `Đại từ - Trợ động từ - Phó từ - Động từ - Trạng từ - Đại từ - Động từ - Tính từ - Danh từ`,
-    vi: `Tôi chưa từng đến, đây là lần đầu tiên.`,
-    pinyin: `Wǒ méiyǒu láiguò, zhè shì dì yī cì.`
-  },
-  {
-    cn_raw: `你都去过什么地方?`,
-    cn_split: `你 - 都 - 去 - 过 - 什么 - 地方`,
-    cn_pos: `Đại từ - Phó từ - Động từ - Trợ từ động thái - Đại từ nghi vấn - Danh từ`,
-    en_raw: `What places have you all been to?`,
-    en_split: `What - places - have - you - all - been - to?`,
-    en_pos: `Tính từ nghi vấn - Danh từ - Trợ động từ - Đại từ - Phó từ - Động từ - Giới từ`,
-    vi: `Bạn đã đi qua những nơi nào rồi?`,
-    pinyin: `Nǐ dōu qùguò shénme dìfang?`
-  },
-  {
-    cn_raw: `我已经去过好多地方了。`,
-    cn_split: `我 - 已经 - 去 - 过 - 好多 - 地方 - 了`,
-    cn_pos: `Đại từ - Phó từ - Động từ - Trợ từ động thái - Tính từ - Danh từ - Trợ từ ngữ khí`,
-    en_raw: `I have already been to many places.`,
-    en_split: `I - have - already - been - to - many - places`,
-    en_pos: `Đại từ - Trợ động từ - Phó từ - Động từ - Giới từ - Tính từ - Danh từ`,
-    vi: `Tôi đã đi qua rất nhiều nơi rồi.`,
-    pinyin: `Wǒ yǐjīng qùguò hǎoduō dìfang le.`
-  },
-  {
-    cn_raw: `北边去过哈尔滨, 南边到过海南岛, 东边上过泰山, 西边去过西安和敦煌。`,
-    cn_split: `北边 - 去 - 过 - 哈尔滨 - 南边 - 到 - 过 - 海南岛 - 东边 - 上 - 过 - 泰山 - 西边 - 去 - 过 - 西安 - 和 - 敦煌`,
-    cn_pos: `Danh từ phương vị - Động từ - Trợ từ động thái - Danh từ riêng (x4) - Liên từ`,
-    en_raw: `I went to Harbin in the north, reached Hainan Island in the south, climbed Mount Tai in the east, and went to Xi'an and Dunhuang in the west.`,
-    en_split: `I - went - to - Harbin - in - the - north - reached - Hainan - Island - in - the - south - climbed - Mount - Tai - in - the - east - and - went - to - Xi'an - and - Dunhuang - in - the - west`,
-    en_pos: `Đại từ - Động từ (v3) - Giới từ - Danh từ - Liên từ`,
-    vi: `Phía bắc đã đi Cáp Nhĩ Tân, phía nam đã đến đảo Hải Nam, phía đông đã lên núi Thái Sơn, phía tây đã đi Tây An và Đôn Hoàng.`,
-    pinyin: `Běibiān qùguò Hā'ěrbīn, nánbiān dàoguò Hǎinándǎo, dōngbiān shàngguò Tàishān, xībiān qùguò Xī'ān hé Dūnhuáng.`
-  },
-  {
-    cn_raw: `你去过的地方真不少。`,
-    cn_split: `你 - 去 - 过 - 的 - 地方 - 真 - 不少`,
-    cn_pos: `Đại từ - Động từ - Trợ từ động thái - Trợ từ kết cấu - Danh từ - Phó từ - Tính từ`,
-    en_raw: `The places you have been to are really many.`,
-    en_split: `The - places - you - have - been - to - are - really - many`,
-    en_pos: `Mạo từ - Danh từ - Đại từ - Trợ động từ - Động từ - Giới từ - Động từ - Phó từ - Tính từ`,
-    vi: `Những nơi bạn đi qua thật không ít chút nào.`,
-    pinyin: `Nǐ qùguò de dìfang zhēn bùshǎo.`
-  },
-  {
-    cn_raw: `来中国以后, 我只去过颐和园、故宫和长城。`,
-    cn_split: `来 - 中国 - 以后 - 我 - 只 - 去 - 过 - 颐和园 - 故宫 - 和 - 长城`,
-    cn_pos: `Động từ - Danh từ - Danh từ thời gian - Đại từ - Phó từ - Động từ - Trợ từ động thái - Danh từ riêng (x3) - Liên từ`,
-    en_raw: `After coming to China, I have only been to the Summer Palace, the Forbidden City, and the Great Wall.`,
-    en_split: `After - coming - to - China - I - have - only - been - to - the - Summer - Palace - the - Forbidden - City - and - the - Great - Wall`,
-    en_pos: `Liên từ - Danh động từ - Giới từ - Danh từ - Đại từ - Trợ động từ - Phó từ - Động từ - Giới từ - Mạo từ - Danh từ riêng`,
-    vi: `Sau khi đến Trung Quốc, tôi mới chỉ đi Di Hòa Viên, Cố Cung và Vạn Lý Trường Thành.`,
-    pinyin: `Lái Zhōngguó yǐhòu, wǒ zhǐ qùguò Yíhéyuán, Gùgōng hé Chángchéng.`
-  },
-  {
-    cn_raw: `习惯吃中餐了吗?`,
-    cn_split: `习惯 - 吃 - 中餐 - 了 - 吗`,
-    cn_pos: `Động từ - Động từ - Danh từ - Trợ từ động thái - Trợ từ nghi vấn`,
-    en_raw: `Are you used to eating Chinese food yet?`,
-    en_split: `Are - you - used - to - eating - Chinese - food - yet?`,
-    en_pos: `Động từ - Đại từ - Tính từ - Giới từ - Danh động từ - Tính từ - Danh từ - Phó từ`,
-    vi: `Đã quen ăn món Trung Quốc chưa?`,
-    pinyin: `Xíguàn chī Zhōngcān le ma?`
-  },
-  {
-    cn_raw: `早就习惯了。`,
-    cn_split: `早就 - 习惯 - 了`,
-    cn_pos: `Phó từ - Động từ - Trợ từ ngữ khí`,
-    en_raw: `I got used to it long ago.`,
-    en_split: `I - got - used - to - it - long - ago`,
-    en_pos: `Đại từ - Động từ - Tính từ - Giới từ - Đại từ - Tính từ - Phó từ`,
-    vi: `Đã sớm quen rồi.`,
-    pinyin: `Zǎojiù xíguàn le.`
-  },
-  {
-    cn_raw: `你吃过哪些中国菜?`,
-    cn_split: `你 - 吃 - 过 - 哪些 - 中国菜`,
-    cn_pos: `Đại từ - Động từ - Trợ từ động thái - Đại từ nghi vấn - Danh từ`,
-    en_raw: `Which Chinese dishes have you eaten?`,
-    en_split: `Which - Chinese - dishes - have - you - eaten?`,
-    en_pos: `Tính từ nghi vấn - Tính từ - Danh từ - Trợ động từ - Đại từ - Động từ`,
-    vi: `Bạn đã ăn qua những món Trung Quốc nào?`,
-    pinyin: `Nǐ chīguò nǎxiē Zhōngguócài?`
-  },
-  {
-    cn_raw: `吃过很多。`,
-    cn_split: `吃 - 过 - 很多`,
-    cn_pos: `Động từ - Trợ từ động thái - Tính từ/Số lượng`,
-    en_raw: `I have eaten many.`,
-    en_split: `I - have - eaten - many`,
-    en_pos: `Đại từ - Trợ động từ - Động từ - Tính từ`,
-    vi: `Đã ăn qua rất nhiều.`,
-    pinyin: `Chīguò hěnduō.`
-  },
-  {
-    cn_raw: `最喜欢吃的是北京烤鸭。`,
-    cn_split: `最 - 喜欢 - 吃 - 的 - 是 - 北京烤鸭`,
-    cn_pos: `Phó từ - Động từ - Động từ - Trợ từ kết cấu - Động từ - Danh từ`,
-    en_raw: `What I like eating most is Beijing Roast Duck.`,
-    en_split: `What - I - like - eating - most - is - Beijing - Roast - Duck`,
-    en_pos: `Đại từ nghi vấn - Đại từ - Động từ - Danh động từ - Phó từ - Động từ - Danh từ riêng`,
-    vi: `Thứ thích ăn nhất là vịt quay Bắc Kinh.`,
-    pinyin: `Zuì xǐhuan chī de shì Běijīng kǎoyā.`
-  },
-  {
-    cn_raw: `你爱吃什么?`,
-    cn_split: `你 - 爱 - 吃 - 什么`,
-    cn_pos: `Đại từ - Động từ - Động từ - Đại từ nghi vấn`,
-    en_raw: `What do you love to eat?`,
-    en_split: `What - do - you - love - to - eat?`,
-    en_pos: `Đại từ nghi vấn - Trợ động từ - Đại từ - Động từ - Giới từ - Động từ`,
-    vi: `Bạn yêu thích ăn gì?`,
-    pinyin: `Nǐ ài chī shénme?`
-  },
-  {
-    cn_raw: `中国菜我都爱吃。`,
-    cn_split: `中国菜 - 我 - 都 - 爱 - 吃`,
-    cn_pos: `Danh từ - Đại từ - Phó từ - Động từ - Động từ`,
-    en_raw: `I love to eat all Chinese dishes.`,
-    en_split: `I - love - to - eat - all - Chinese - dishes`,
-    en_pos: `Đại từ - Động từ - Giới từ - Động từ - Tính từ - Tính từ - Danh từ`,
-    vi: `Món Trung Quốc tôi đều thích ăn.`,
-    pinyin: `Zhōngguócài wǒ dōu ài chī.`
-  },
-  {
-    cn_raw: `还爱吃烤白薯、糖葫芦什么的。`,
-    cn_split: `还 - 爱 - 吃 - 烤白薯 - 糖葫芦 - 什么的`,
-    cn_pos: `Phó từ - Động từ - Động từ - Danh từ - Danh từ - Cụm trợ từ`,
-    en_raw: `I also love to eat roasted sweet potatoes, sugar-coated haws, and so on.`,
-    en_split: `I - also - love - to - eat - roasted - sweet - potatoes - sugar-coated - haws - and - so - on`,
-    en_pos: `Đại từ - Phó từ - Động từ - Giới từ - Động từ - Tính từ - Tính từ - Danh từ - Tính từ - Danh từ - Liên từ`,
-    vi: `Còn thích ăn khoai lang nướng, kẹo hồ lô và những thứ tương tự.`,
-    pinyin: `Hái ài chī kǎobáishǔ, tánghúlu shénme de.`
-  },
-  {
-    cn_raw: `看过京剧吗?`,
-    cn_split: `看 - 过 - 京剧 - 吗`,
-    cn_pos: `Động từ - Trợ từ động thái - Danh từ - Trợ từ nghi vấn`,
-    en_raw: `Have you watched Peking Opera?`,
-    en_split: `Have - you - watched - Peking - Opera?`,
-    en_pos: `Trợ động từ - Đại từ - Động từ - Danh từ riêng - Danh từ`,
-    vi: `Đã từng xem Kinh kịch chưa?`,
-    pinyin: `Kànguò Jīngjù ma?`
-  },
-  {
-    cn_raw: `没看过。`,
-    cn_split: `没 - 看 - 过`,
-    cn_pos: `Phó từ phủ định - Động từ - Trợ từ động thái`,
-    en_raw: `I haven't watched it.`,
-    en_split: `I - have - not - watched - it`,
-    en_pos: `Đại từ - Trợ động từ - Phó từ - Động từ - Đại từ`,
-    vi: `Chưa từng xem qua.`,
-    pinyin: `Méi kànguò.`
-  },
-  {
-    cn_raw: `听说京剧很有意思, 我很想去看看。`,
-    cn_split: `听说 - 京剧 - 很 - 有意思 - 我 - 很 - 想 - 去 - 看看`,
-    cn_pos: `Động từ - Danh từ - Phó từ - Tính từ - Đại từ - Phó từ - Động từ nguyện vọng - Động từ - Động từ lặp lại`,
-    en_raw: `I heard that Peking Opera is very interesting, I really want to go and see.`,
-    en_split: `I - heard - that - Peking - Opera - is - very - interesting - I - really - want - to - go - and - see`,
-    en_pos: `Đại từ - Động từ - Liên từ - Danh từ riêng - Danh từ - Động từ - Phó từ - Tính từ - Đại từ - Phó từ - Động từ - Giới từ - Động từ - Liên từ - Động từ`,
-    vi: `Nghe nói Kinh kịch rất thú vị, tôi rất muốn đi xem thử.`,
-    pinyin: `Tīngshuō Jīngjù hěn yǒuyìsi, wǒ hěn xiǎng qù kànkan.`
-  }
-];
-// Cập nhật hàm render để truyền dữ liệu an toàn hơn
-function renderBook() {
-    const container = document.getElementById('bookContent');
-    sentences.forEach((s, i) => {
-        const item = document.createElement('div');
-        item.className = 'sentence-item';
-        item.innerHTML = `
-            <div class="text-content">
-                <div class="row-cn">
-                    <span id="cn-txt-${i}">${s.cn_raw}</span>
-                </div>
-                <div id="cn-pos-${i}" class="pos-tag hidden">${s.cn_pos}</div>
-                <div id="pinyin-${i}" class="pinyin-row hidden">${s.pinyin || ''}</div>
-                <div class="row-en">
-                    <span id="en-txt-${i}">${s.en_raw}</span>
-                </div>
-                <div id="en-pos-${i}" class="pos-tag hidden">${s.en_pos}</div>
-                <div class="row-vi">${s.vi}</div>
-            </div>
-            <div class="control-sidebar">
-                <button class="btn-icon" onclick="playSpeech(${i}, 'cn')">♘</button>
-                <button class="btn-icon" onclick="toggleMode(${i}, 'cn')">♔</button>
-                <button class="btn-icon" onclick="playSpeech(${i}, 'en')">♖</button>
-                <button class="btn-icon" onclick="toggleMode(${i}, 'en')">♕</button>
-            </div>
-        `;
-        container.appendChild(item);
-    });
-}
-// Hàm phát âm mới: Lấy dữ liệu trực tiếp từ mảng thay vì truyền chuỗi qua HTML
-// Hàm phát âm: Tự động duy trì ngôn ngữ đang chọn
-function playSpeech(index, langType) {
-    // 1. Dừng mọi âm thanh đang phát để tránh chồng chéo
-    window.speechSynthesis.cancel(); 
-
-    let textToRead = "";
-    let langCode = "";
-
-    // 2. Xác định nội dung và mã ngôn ngữ dựa trên lựa chọn của người dùng
-    if (langType === 'cn') {
-        textToRead = sentences[index].cn_raw;
-        langCode = 'zh-CN';
-    } else {
-        textToRead = sentences[index].en_raw;
-        langCode = 'en-US';
-    }
-
-    const msg = new SpeechSynthesisUtterance();
-    msg.text = textToRead;
-    msg.lang = langCode;
-    msg.rate = document.getElementById('rate').value;
-    
-    // 3. Hiệu ứng Highlight: Tô màu câu đang đọc để dễ theo dõi
-    const allItems = document.getElementsByClassName('sentence-item');
-    // Xóa màu của tất cả các câu khác
-    Array.from(allItems).forEach(item => item.style.backgroundColor = "transparent");
-    // Tô màu vàng nhạt cho câu hiện tại
-    allItems[index].style.backgroundColor = "rgba(230, 126, 34, 0.1)";
-
-    // 4. Xử lý khi kết thúc câu
-    msg.onend = () => {
-        const isAuto = document.getElementById('autoNext').checked;
-        if (isAuto && index < sentences.length - 1) {
-            setTimeout(() => {
-                // QUAN TRỌNG: Truyền đúng langType hiện tại vào lần gọi tiếp theo
-                playSpeech(index + 1, langType); 
-                
-                // Tự động cuộn màn hình đến câu tiếp theo
-                allItems[index + 1].scrollIntoView({
-                    behavior: "smooth", 
-                    block: "center"
-                });
-            }, 500); // Nghỉ 0.5 giây giữa các câu để người dùng kịp ngấm
-        }
-    };
-
-    window.speechSynthesis.speak(msg);
-}
-function toggleMode(index, lang) {
-    const txtSpan = document.getElementById(`${lang}-txt-${index}`);
-    const posSpan = document.getElementById(`${lang}-pos-${index}`);
-    const isOriginal = txtSpan.innerText === sentences[index][`${lang}_raw`];
-
-    txtSpan.innerText = isOriginal ? sentences[index][`${lang}_split`] : sentences[index][`${lang}_raw`];
-    posSpan.classList.toggle('hidden');
-}
-
-function toggleDarkMode() {
-    document.body.classList.toggle('dark-mode');
-}
-
-function toggleAllPinyin() {
-    // 1. Lấy tất cả các phần tử có class là pinyin-row
-    const pinyinElements = document.getElementsByClassName('pinyin-row');
-    
-    // 2. Kiểm tra nếu không tìm thấy phần tử nào (báo lỗi ra Console để kiểm tra)
-    if (pinyinElements.length === 0) {
-        console.error("Không tìm thấy phần tử nào có class 'pinyin-row'");
-        return;
-    }
-
-    // 3. Duyệt qua từng phần tử và bật/tắt class 'hidden'
-    for (let i = 0; i < pinyinElements.length; i++) {
-        pinyinElements[i].classList.toggle('hidden');
-    }
-}
-
-function speak(text, lang, index) {
-    window.speechSynthesis.cancel();
-    const msg = new SpeechSynthesisUtterance(text);
-    msg.lang = lang;
-    msg.rate = document.getElementById('rate').value;
-
-    msg.onend = () => {
-        if (document.getElementById('autoNext').checked && index < sentences.length - 1) {
-            setTimeout(() => {
-                speak(sentences[index + 1].cn_raw, 'zh-CN', index + 1);
-                document.getElementsByClassName('sentence-item')[index+1].scrollIntoView({behavior: "smooth", block: "center"});
-            }, 1200);
-        }
-    };
-    window.speechSynthesis.speak(msg);
-}
-
-renderBook();
-</script>
 </body>
 </html>
+
